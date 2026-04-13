@@ -66,12 +66,25 @@
 ## 修改3：报表时间选择器
 
 ### 修改文件：`src/pages/Reports.tsx`
-- 标题行右侧添加：开始日期 + 结束日期（`<input type="date">`）
-- 默认：开始=90天前，结束=今天
-- 新增 `filteredTransactions = transactions.filter(t => t.date >= start && t.date <= end)`
-- 所有 Tab 的图表/计算统一使用 filteredTransactions 而非 transactions
-- 月度图表动态生成月份列表（根据选中范围）
-- 每日趋势图动态生成日期列表（根据选中范围）
+
+**快捷选项按钮组（默认选中"本月"）：**
+- 今日 → startDate=今天, endDate=今天
+- 本周 → startDate=本周一, endDate=今天
+- 本月 → startDate=本月1号, endDate=今天
+- 本季度 → startDate=本季度第一天, endDate=今天
+- 本年 → startDate=1月1日, endDate=今天
+- 自定义 → 展开开始日期+结束日期两个 `<input type="date">`
+
+**UI 布局：**
+- 标题行"对账报表"右侧，快捷按钮组+自定义日期选择器横排
+- 样式与 Tab 栏一致（pill 按钮），选中态高亮
+
+**数据过滤：**
+- `filteredTransactions = transactions.filter(t => t.date >= startDate && t.date <= endDate)`
+- 所有 Tab 的图表/计算统一使用 filteredTransactions
+- 月度图表根据范围动态生成月份
+- 每日趋势图根据范围动态生成日期
+- 金额统计卡片标题动态显示选中的时间段（如"本月入库总额"→"2026-04 入库总额"）
 
 ---
 
