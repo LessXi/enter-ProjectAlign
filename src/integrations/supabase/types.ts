@@ -3296,6 +3296,10 @@ export type Database = {
         }
         Returns: Json
       }
+      lookup_email_by_name: {
+        Args: { p_name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

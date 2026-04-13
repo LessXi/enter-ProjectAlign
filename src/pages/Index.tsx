@@ -2,7 +2,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { StatsCard } from '@/components/StatsCard';
 import { StockBadge, POBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
-import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, DollarSign, Clock, Loader2 } from 'lucide-react';
+import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, DollarSign, Clock, Loader2, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
@@ -50,6 +50,7 @@ export default function Dashboard() {
   const getItemName = (id: string) => items.find((i) => i.id === id)?.name || id;
 
   const isBoss = currentRole === 'boss';
+  const isPurchasing = currentRole === 'purchasing';
 
   if (isLoading) {
     return (
@@ -147,6 +148,7 @@ export default function Dashboard() {
                     <th className="text-right py-2 font-semibold text-muted-foreground">库存</th>
                     <th className="text-right py-2 font-semibold text-muted-foreground">阈值</th>
                     <th className="text-right py-2 font-semibold text-muted-foreground">状态</th>
+                    {isPurchasing && <th className="text-right py-2 font-semibold text-muted-foreground">操作</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -156,6 +158,17 @@ export default function Dashboard() {
                       <td className="py-2 text-right font-medium">{item.stock}</td>
                       <td className="py-2 text-right text-muted-foreground">{item.threshold}</td>
                       <td className="py-2 text-right"><StockBadge status={getStockStatus(item.stock, item.threshold)} /></td>
+                      {isPurchasing && (
+                        <td className="py-2 text-right">
+                          <Link
+                            to="/purchase-orders"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+                          >
+                            <ShoppingCart className="w-3 h-3" />
+                            去采购
+                          </Link>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

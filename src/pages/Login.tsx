@@ -16,6 +16,7 @@ export default function Login() {
   const { signIn, signUp } = useAuth();
 
   const [tab, setTab] = useState<Tab>('login');
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -24,14 +25,14 @@ export default function Login() {
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!email || !password) return;
+    if (!identifier || !password) return;
     setLoading(true);
     setError('');
     try {
-      await signIn(email, password);
+      await signIn(identifier, password);
       navigate('/');
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : '登录失败，请检查邮箱和密码');
+      setError(e instanceof Error ? e.message : '登录失败，请检查账号和密码');
     } finally {
       setLoading(false);
     }
@@ -96,17 +97,30 @@ export default function Login() {
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium mb-1.5">邮箱 *</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="输入邮箱地址"
-                onKeyDown={(e) => e.key === 'Enter' && tab === 'login' && handleLogin()}
-                className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-              />
-            </div>
+            {tab === 'login' ? (
+              <div>
+                <label className="block text-sm font-medium mb-1.5">姓名或邮箱 *</label>
+                <input
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="输入姓名或邮箱登录"
+                  onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                  className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                />
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium mb-1.5">邮箱 *</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="输入邮箱地址"
+                  className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-1.5">密码 *</label>
@@ -152,7 +166,7 @@ export default function Login() {
 
             <button
               onClick={tab === 'login' ? handleLogin : handleRegister}
-              disabled={loading || !email || !password || (tab === 'register' && !displayName)}
+              disabled={loading || (tab === 'login' ? !identifier || !password : !email || !password || !displayName)}
               className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 mt-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
