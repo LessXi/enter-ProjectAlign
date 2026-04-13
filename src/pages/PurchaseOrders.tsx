@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { POBadge } from '@/components/StatusBadge';
 import { Plus, Check, X, Eye, Loader2 } from 'lucide-react';
@@ -8,6 +8,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'react-router-dom';
 
 const inputCls = "w-full bg-muted/40 border border-border/50 rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-mint/50";
+
+/* Category → SKU prefix mapping (common garment categories) */
+const CATEGORY_PREFIX: Record<string, string> = {
+  'T恤': 'TS', 't恤': 'TS', '卫衣': 'HD', '牛仔裤': 'JN', '夹克': 'JK',
+  'Polo衫': 'PL', 'polo衫': 'PL', '半裙': 'SK', '连衣裙': 'DR', '衬衫': 'SH',
+  '外套': 'CT', '裤子': 'PT', '短裤': 'SP', '羽绒服': 'DW', '风衣': 'TC',
+  '针织衫': 'KN', '西装': 'ST', '背心': 'VT', '内衣': 'UW', '袜子': 'SO',
+};
 
 export default function PurchaseOrders() {
   const { role: currentRole } = useAuth();
@@ -31,10 +39,21 @@ export default function PurchaseOrders() {
   // New product form
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [newName, setNewName] = useState('');
-  const [newSku, setNewSku] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newSpec, setNewSpec] = useState('');
   const [newThreshold, setNewThreshold] = useState('20');
+
+  /* Auto-generate SKU from category + existing product count */
+  const generatedSku = useMemo(() => {
+    if (!newCategory.trim()) return '';
+    const prefix = CATEGORY_PREFIX[newCategory.trim()] || newCategory.trim().slice(0, 2).toUpperCase();
+    const samePrefix = items.filter((i) => i.sku.startsWith(prefix + '-'));
+    const maxNum = samePrefix.reduce((max, i) => {
+      const n = parseInt(i.sku.split('-')[1], 10);
+      return isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    return `${prefix}-${String(maxNum + 1).padStart(3, '0')}`;
+  }, [newCategory, items]);
 
   useEffect(() => {
     const prefillId = searchParams.get('prefill');
@@ -61,13 +80,13 @@ export default function PurchaseOrders() {
 
   const resetForm = () => {
     setPOItemId(''); setPOQty(''); setPOPrice(''); setPOSupplier(''); setPONote('');
-    setIsNewProduct(false); setNewName(''); setNewSku(''); setNewCategory(''); setNewSpec(''); setNewThreshold('20');
+    setIsNewProduct(false); setNewName(''); setNewCategory(''); setNewSpec(''); setNewThreshold('20');
   };
 
   const handleCreate = async (status: POStatus) => {
     // Validate fields depending on mode
     if (isNewProduct) {
-      if (!newName || !newSku || !newCategory || !newSpec || !poQty || !poPrice || !poSupplier) return;
+      if (!newName || !generatedSku || !newCategory || !newSpec || !poQty || !poPrice || !poSupplier) return;
     } else {
       if (!poItemId || !poQty || !poPrice || !poSupplier) return;
     }
@@ -78,7 +97,7 @@ export default function PurchaseOrders() {
       // If new product mode, create product first
       if (isNewProduct) {
         const newProduct = await addProduct.mutateAsync({
-          sku: newSku,
+          sku: generatedSku,
           name: newName,
           category: newCategory,
           spec: newSpec,
@@ -129,7 +148,7 @@ export default function PurchaseOrders() {
   const formBusy = createPO.isPending || addProduct.isPending;
 
   const canSubmit = isNewProduct
-    ? !!(newName && newSku && newCategory && newSpec && poQty && poPrice && poSupplier)
+    ? !!(newName && generatedSku && newCategory && newSpec && poQty && poPrice && poSupplier)
     : !!(poItemId && poQty && poPrice && poSupplier);
 
   return (
@@ -182,8 +201,8 @@ export default function PurchaseOrders() {
                   <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="例: 基础圆领T恤" className={inputCls} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">SKU *</label>
-                  <input type="text" value={newSku} onChange={(e) => setNewSku(e.target.value)} placeholder="例: TS-003" className={inputCls} />
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">SKU（自动生成）</label>
+                  <input type="text" value={generatedSku} readOnly placeholder="填写品类后自动生成" className={`${inputCls} bg-muted/60 cursor-default`} />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1.5">品类 *</label>
