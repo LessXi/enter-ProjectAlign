@@ -5,7 +5,7 @@ import { Loader2, Calendar } from 'lucide-react';
 import { useProducts, useTransactions } from '@/hooks/useInventoryData';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  ComposedChart, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   ReferenceLine,
 } from 'recharts';
 
@@ -274,7 +274,10 @@ export default function Reports() {
   const amountChartData = (useDaily
     ? dailyAmountData
     : monthlyData.map((m) => ({ ...m, label: m.month }))
-  ).map((d) => ({ ...d, profit: d.outbound - d.inbound }));
+  ).map((d) => {
+    const qtyEntry = dailyData.find((q) => q.day === d.label);
+    return { ...d, profit: d.outbound - d.inbound, qtyIn: qtyEntry?.inbound ?? 0, qtyOut: qtyEntry?.outbound ?? 0 };
+  });
 
   const amountChartTitle = useMemo(() => {
     const granularity = useDaily ? '每日' : '月度';
@@ -365,17 +368,27 @@ export default function Reports() {
 
           <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
             <h3 className="text-sm font-semibold text-foreground mb-4">{amountChartTitle}</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={amountChartData}>
+            <ResponsiveContainer width="100%" height={320}>
+              <ComposedChart data={amountChartData}>
                 <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
                   interval={amountChartData.length > 15 ? Math.floor(amountChartData.length / 12) : 0}
                   padding={{ left: 10, right: 30 }} />
-                <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                <YAxis yAxisId="left" axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
+                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(0,0%,40%)' }} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                  formatter={(value: number, name: string) => {
+                    if (name === '入库量' || name === '出库量') return [value, name];
+                    return [`¥${value.toLocaleString()}`, name];
+                  }}
+                  contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }}
+                />
                 <Legend />
-                <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(255,80%,82%)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
-              </BarChart>
+                <Bar yAxisId="left" dataKey="inbound" name="入库金额（支出）" fill="hsl(255,80%,82%)" radius={[6, 6, 0, 0]} />
+                <Bar yAxisId="left" dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
+                <Line yAxisId="right" type="monotone" dataKey="qtyIn" name="入库量" stroke="hsl(255,80%,62%)" strokeWidth={2} dot={false} strokeDasharray="6 3" />
+                <Line yAxisId="right" type="monotone" dataKey="qtyOut" name="出库量" stroke="hsl(125,85%,45%)" strokeWidth={2} dot={false} strokeDasharray="6 3" />
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
           <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
@@ -399,20 +412,6 @@ export default function Reports() {
                 />
                 <Area type="monotone" dataKey="profit" name="利润" stroke="#FFD666" strokeWidth={2} fill="url(#profitGradientPos)" />
               </AreaChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={dailyData}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
-                  interval={Math.max(0, Math.floor(dailyData.length / 15) - 1)}
-                  padding={{ left: 10, right: 30 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
-                <Legend />
-                <Line type="monotone" dataKey="inbound" name="入库量" stroke="hsl(255,80%,82%)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="outbound" name="出库量" stroke="hsl(125,85%,81%)" strokeWidth={2} dot={false} />
-              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
