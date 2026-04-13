@@ -1,1 +1,50 @@
-The original code content of this argument has been omitted to save context. This is not actual code. Use read_file to check the current content of /workspace/thread/.enter/plans/inventory-system.md if needed.
+# Plan: 整理项目文档
+
+## Context
+用户要求整理项目文档，至少包含 README.md、AGENTS.md、用户操作指导。项目是一个服装批发进销存管理系统，技术栈为 React + TypeScript + Vite + Tailwind CSS + shadcn/ui + Enter Cloud (Supabase)。
+
+## 文档结构
+
+创建 **3 个文档**：
+
+### 1. `README.md` — 项目总览（给人看）
+- 项目简介（服装批发进销存系统）
+- 技术栈说明
+- 功能模块概述（工作台、库存管理、入库/出库、采购单、对账报表、员工管理）
+- 角色权限说明（仓管/采购/老板）
+- 数据库表结构概述
+- 项目目录结构
+- 本地开发/启动方式
+- 设计系统简述（配色规范、语义色）
+
+### 2. `AGENTS.md` — Agent 技术导航（给 AI 看）
+- 项目架构概述
+- 关键文件索引（分类：页面、组件、Hooks、类型、样式、后端函数）
+- 数据流说明（Supabase → React Query → 页面组件）
+- 认证流程说明
+- 设计系统规范（颜色语义：入库=lavender紫色，出库=mint绿色）
+- 业务逻辑规则（现金流方向、库存预警阈值算法、PO收货联动入库）
+- Edge Functions 列表及职责
+- 常见陷阱/注意事项
+
+### 3. `docs/USER_GUIDE.md` — 用户操作指导（给最终用户看）
+- 系统登录（支持姓名/邮箱登录，注册）
+- 各角色功能说明：
+  - 仓管：入库/出库操作步骤
+  - 采购：创建采购单、提交审批、收货入库
+  - 老板：审批采购单、查看报表、管理员工
+- 工作台使用说明
+- 对账报表使用说明（时间段筛选、四个分析维度）
+- 库存预警说明
+
+## 修改的文件
+| 文件 | 操作 |
+|------|------|
+| `README.md` | 覆写（已有空文件）|
+| `AGENTS.md` | 新建 |
+| `docs/USER_GUIDE.md` | 新建 |
+
+## 验证
+- 确认文档内容与代码实际一致
+- 确认 AGENTS.md 中文件路径均存在
+- Lint check 无影响（纯文档）
