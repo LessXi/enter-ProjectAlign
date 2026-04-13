@@ -4,7 +4,7 @@ import { StockBadge, POBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
 import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, DollarSign, Clock, Loader2, ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
 import { useProducts, useTransactions, usePurchaseOrders } from '@/hooks/useInventoryData';
 
@@ -37,7 +37,7 @@ export default function Dashboard() {
     const ranges = [[1, 7], [8, 14], [15, 21], [22, 28], [29, daysInMonth]];
     for (const [start, end] of ranges) {
       if (start > daysInMonth) break;
-      weeks.push({ week: `${start}-${Math.min(end, daysInMonth)}日`, inbound: 0, outbound: 0 });
+      weeks.push({ week: `${start}-${Math.min(end, daysInMonth)}日`, inbound: 0, outbound: 0, profit: 0 });
     }
     monthTxs.forEach((t) => {
       const day = parseInt(t.date.slice(8, 10), 10);
@@ -48,6 +48,7 @@ export default function Dashboard() {
         else weeks[idx].outbound += val;
       }
     });
+    weeks.forEach((w) => { w.profit = w.outbound - w.inbound; });
     return weeks;
   }, [monthTxs]);
 
@@ -91,17 +92,19 @@ export default function Dashboard() {
             </div>
           </div>
           <ResponsiveContainer width="100%" className="flex-1 min-h-0" height="100%">
-            <BarChart data={miniChartData} barGap={4}>
+            <ComposedChart data={miniChartData} barGap={4}>
               <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,200,100,0.4)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
                 cursor={{ fill: 'rgba(255,255,255,0.08)' }}
-                formatter={(value: number) => `¥${value.toLocaleString()}`}
+                formatter={(value: number, name: string) => [`¥${value.toLocaleString()}`, name]}
                 contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '12px', color: '#1A1A1A', fontSize: '12px' }}
               />
-              <Bar dataKey="inbound" name="入库" fill="#B3A1FF" radius={[6, 6, 2, 2]} />
-              <Bar dataKey="outbound" name="出库" fill="#A4F5A6" radius={[6, 6, 2, 2]} />
-            </BarChart>
+              <Bar yAxisId="left" dataKey="inbound" name="入库" fill="#B3A1FF" radius={[6, 6, 2, 2]} />
+              <Bar yAxisId="left" dataKey="outbound" name="出库" fill="#A4F5A6" radius={[6, 6, 2, 2]} />
+              <Line yAxisId="right" type="monotone" dataKey="profit" name="利润" stroke="#FFD666" strokeWidth={2} dot={{ r: 3, fill: '#FFD666' }} activeDot={{ r: 5 }} />
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
 
