@@ -7,6 +7,10 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const json = (body: unknown) => new Response(JSON.stringify(body), {
+  status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+});
+
 async function verifyBoss(adminClient: ReturnType<typeof createClient>, authHeader: string) {
   const { data: { user }, error } = await adminClient.auth.getUser(authHeader.replace("Bearer ", ""));
   if (error || !user) return null;
@@ -20,21 +24,21 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return new Response(JSON.stringify({ error: "Missing auth" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!authHeader) return json({ error: "未登录" });
 
     const adminClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const caller = await verifyBoss(adminClient, authHeader);
-    if (!caller) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!caller) return json({ error: "仅老板可以管理员工" });
 
     const { action, userId, email, password, displayName, role } = await req.json();
-    if (!userId || !action) return new Response(JSON.stringify({ error: "Missing userId or action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!userId || !action) return json({ error: "缺少必要参数" });
 
     if (action === "delete") {
-      if (userId === caller.id) return new Response(JSON.stringify({ error: "不能删除自己的账号" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (userId === caller.id) return json({ error: "不能删除自己的账号" });
       await adminClient.from("profiles").delete().eq("id", userId);
       const { error: delErr } = await adminClient.auth.admin.deleteUser(userId);
-      if (delErr) return new Response(JSON.stringify({ error: delErr.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (delErr) return json({ error: delErr.message });
+      return json({ success: true });
     }
 
     if (action === "update") {
@@ -43,7 +47,7 @@ Deno.serve(async (req) => {
       if (password) authUpdate.password = password;
       if (Object.keys(authUpdate).length > 0) {
         const { error: updateErr } = await adminClient.auth.admin.updateUserById(userId, authUpdate);
-        if (updateErr) return new Response(JSON.stringify({ error: updateErr.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (updateErr) return json({ error: updateErr.message });
       }
 
       const profileUpdate: Record<string, string> = {};
@@ -52,15 +56,15 @@ Deno.serve(async (req) => {
       if (password) profileUpdate.password_plain = password;
       if (Object.keys(profileUpdate).length > 0) {
         const { error: profErr } = await adminClient.from("profiles").update(profileUpdate).eq("id", userId);
-        if (profErr) return new Response(JSON.stringify({ error: profErr.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (profErr) return json({ error: profErr.message });
       }
 
-      return new Response(JSON.stringify({ success: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return json({ success: true });
     }
 
-    return new Response(JSON.stringify({ error: "Invalid action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ error: "无效操作" });
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return json({ error: "服务器内部错误" });
   }
 });

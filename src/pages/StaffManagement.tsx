@@ -63,6 +63,7 @@ export default function StaffManagement() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       setUsers(data?.users ?? []);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '获取员工列表失败';
