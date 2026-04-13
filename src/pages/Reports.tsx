@@ -4,7 +4,7 @@ import { getStockStatus } from '@/lib/stockStatus';
 import { Loader2, Calendar } from 'lucide-react';
 import { useProducts, useTransactions } from '@/hooks/useInventoryData';
 import {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  BarChart, Bar, Line, PieChart, Pie, Cell,
   ComposedChart, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   ReferenceLine,
 } from 'recharts';
@@ -274,9 +274,35 @@ export default function Reports() {
   const amountChartData = (useDaily
     ? dailyAmountData
     : monthlyData.map((m) => ({ ...m, label: m.month }))
-  ).map((d) => {
-    const qtyEntry = dailyData.find((q) => q.day === d.label);
-    return { ...d, profit: d.outbound - d.inbound, qtyIn: qtyEntry?.inbound ?? 0, qtyOut: qtyEntry?.outbound ?? 0 };
+  ).map((d, _i, arr) => {
+    let qtyIn = 0;
+    let qtyOut = 0;
+    if (useDaily) {
+      const qtyEntry = dailyData.find((q) => q.day === d.label);
+      qtyIn = qtyEntry?.inbound ?? 0;
+      qtyOut = qtyEntry?.outbound ?? 0;
+    } else {
+      // monthly: aggregate quantity from dailyData by matching month label
+      const monthKey = (d as typeof monthlyData[number] & { key?: string }).key;
+      if (monthKey) {
+        dailyData.forEach((q) => {
+          if (q.date.startsWith(monthKey)) {
+            qtyIn += q.inbound;
+            qtyOut += q.outbound;
+          }
+        });
+      } else {
+        // fallback: match by month number
+        const monthNum = parseInt(d.label);
+        dailyData.forEach((q) => {
+          if (parseInt(q.day) === monthNum) {
+            qtyIn += q.inbound;
+            qtyOut += q.outbound;
+          }
+        });
+      }
+    }
+    return { ...d, profit: d.outbound - d.inbound, qtyIn, qtyOut };
   });
 
   const amountChartTitle = useMemo(() => {
@@ -378,7 +404,7 @@ export default function Reports() {
                 <Tooltip
                   cursor={{ fill: 'rgba(0,0,0,0.04)' }}
                   formatter={(value: number, name: string) => {
-                    if (name === '入库量' || name === '出库量') return [value, name];
+                    if (name === '入库量' || name === '出库量') return [`${value}件`, name];
                     return [`¥${value.toLocaleString()}`, name];
                   }}
                   contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }}
