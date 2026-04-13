@@ -215,12 +215,12 @@ export default function StaffManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-foreground">员工管理</h2>
+        <h2 className="text-xl font-bold text-foreground">员工管理</h2>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all shadow-card"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#1A1A2E] text-white rounded-xl text-sm font-semibold hover:bg-[#2A2A3E] transition-all"
         >
           <Plus className="w-4 h-4" />
           创建账号
@@ -230,7 +230,7 @@ export default function StaffManagement() {
       {/* Toast */}
       {toast && (
         <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
-          toast.type === 'success' ? 'bg-primary/15 border border-primary/25 text-primary' : 'bg-destructive/15 border border-destructive/25 text-destructive'
+          toast.type === 'success' ? 'bg-success-bg border border-success/20 text-success' : 'bg-destructive-bg border border-destructive/20 text-destructive'
         }`}>
           {toast.msg}
         </div>

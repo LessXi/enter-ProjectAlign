@@ -53,6 +53,8 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				mint: 'hsl(var(--mint))',
+				lavender: 'hsl(var(--lavender))',
 				success: {
 					DEFAULT: 'hsl(var(--success))',
 					foreground: 'hsl(var(--success-foreground))',
@@ -81,8 +83,9 @@ export default {
 				}
 			},
 			borderRadius: {
-				'2xl': '2rem',
-				xl: '1.5rem',
+				'3xl': '1.5rem',
+				'2xl': '1.25rem',
+				xl: '1rem',
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 4px)',
 				sm: 'calc(var(--radius) - 8px)'

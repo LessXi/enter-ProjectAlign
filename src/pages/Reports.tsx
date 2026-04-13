@@ -250,20 +250,20 @@ export default function Reports() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 animate-fade-in-up">
       {/* Header + date range */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold text-foreground">对账报表</h2>
+        <h2 className="text-xl font-bold text-foreground">对账报表</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-card">
+          <div className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-card border border-border/50">
             {presets.map((p) => (
               <button
                 key={p.key}
                 onClick={() => setPreset(p.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                   preset === p.key
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'text-card-foreground/40 hover:text-card-foreground hover:bg-card-foreground/5'
+                    ? 'bg-[#1A1A2E] text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                 }`}
               >
                 {p.label}
@@ -271,24 +271,24 @@ export default function Reports() {
             ))}
           </div>
           {preset === 'custom' && (
-            <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-1.5 shadow-card">
-              <Calendar className="w-4 h-4 text-card-foreground/40" />
+            <div className="flex items-center gap-2 bg-card rounded-xl px-3 py-1.5 shadow-card border border-border/50">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
               <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)}
-                className="bg-transparent text-xs border-none outline-none text-card-foreground" />
-              <span className="text-card-foreground/30 text-xs">至</span>
+                className="bg-transparent text-xs border-none outline-none text-foreground" />
+              <span className="text-muted-foreground text-xs">至</span>
               <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)}
-                className="bg-transparent text-xs border-none outline-none text-card-foreground" />
+                className="bg-transparent text-xs border-none outline-none text-foreground" />
             </div>
           )}
         </div>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-card w-fit">
+      <div className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-card border border-border/50 w-fit">
         {tabs.map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-              activeTab === tab.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-card-foreground/40 hover:text-card-foreground hover:bg-card-foreground/5'
+              activeTab === tab.key ? 'bg-[#1A1A2E] text-white shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
             }`}>
             {tab.label}
           </button>
@@ -299,32 +299,32 @@ export default function Reports() {
         <div className="space-y-4">
           {/* KPI cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-card rounded-2xl shadow-card p-5 text-center transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-sm text-card-foreground/50">{periodLabel} 入库总额</p>
-              <p className="text-xl font-bold text-warning mt-1">¥{periodInbound.toLocaleString()}</p>
-              <p className="text-xs text-card-foreground/30 mt-1">采购支出</p>
+            <div className="bg-mint rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
+              <p className="text-xs text-black/50">{periodLabel} 入库总额</p>
+              <p className="text-xl font-bold text-black mt-1">¥{periodInbound.toLocaleString()}</p>
+              <p className="text-[10px] text-black/40 mt-1">采购支出</p>
             </div>
-            <div className="bg-card rounded-2xl shadow-card p-5 text-center transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-sm text-card-foreground/50">{periodLabel} 出库总额</p>
-              <p className="text-xl font-bold text-primary mt-1">¥{periodOutbound.toLocaleString()}</p>
-              <p className="text-xs text-card-foreground/30 mt-1">销售收入</p>
+            <div className="bg-lavender rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
+              <p className="text-xs text-white/60">{periodLabel} 出库总额</p>
+              <p className="text-xl font-bold text-white mt-1">¥{periodOutbound.toLocaleString()}</p>
+              <p className="text-[10px] text-white/50 mt-1">销售收入</p>
             </div>
-            <div className="bg-card rounded-2xl shadow-card p-5 text-center transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-sm text-card-foreground/50">净现金流</p>
-              <p className={`text-xl font-bold mt-1 ${netCashFlow >= 0 ? 'text-primary' : 'text-destructive'}`}>
+            <div className="bg-[#1A1A2E] rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
+              <p className="text-xs text-white/50">净现金流</p>
+              <p className={`text-xl font-bold mt-1 ${netCashFlow >= 0 ? 'text-[#A4F5A6]' : 'text-red-400'}`}>
                 {netCashFlow >= 0 ? '+' : ''}¥{netCashFlow.toLocaleString()}
               </p>
-              <p className="text-xs text-card-foreground/30 mt-1">收入 - 支出</p>
+              <p className="text-[10px] text-white/40 mt-1">收入 - 支出</p>
             </div>
-            <div className="bg-card rounded-2xl shadow-card p-5 text-center transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-sm text-card-foreground/50">交易笔数</p>
-              <p className="text-xl font-bold text-accent mt-1">{txCount}</p>
-              <p className="text-xs text-card-foreground/30 mt-1">笔入/出库记录</p>
+            <div className="bg-card rounded-3xl p-5 text-center shadow-card border border-border/50 transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
+              <p className="text-xs text-muted-foreground">交易笔数</p>
+              <p className="text-xl font-bold text-foreground mt-1">{txCount}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">笔入/出库记录</p>
             </div>
           </div>
 
-          <div className="bg-card rounded-2xl shadow-card p-6">
-            <h3 className="text-base font-semibold text-card-foreground mb-4">{amountChartTitle}</h3>
+          <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+            <h3 className="text-sm font-semibold text-foreground mb-4">{amountChartTitle}</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={amountChartData}>
                 <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
@@ -338,8 +338,8 @@ export default function Reports() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-card rounded-2xl shadow-card p-6">
-            <h3 className="text-base font-semibold text-card-foreground mb-4">每日进出数量趋势</h3>
+          <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+            <h3 className="text-sm font-semibold text-foreground mb-4">每日进出数量趋势</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={dailyData}>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
@@ -359,8 +359,8 @@ export default function Reports() {
       {activeTab === 'category' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-base font-semibold text-card-foreground mb-4">库存金额品类占比</h3>
+            <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4">库存金额品类占比</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie data={categoryData} dataKey="totalValue" nameKey="category" cx="50%" cy="50%" outerRadius={100}
@@ -371,8 +371,8 @@ export default function Reports() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-base font-semibold text-card-foreground mb-4">Top 5 热销商品（{periodLabel}）</h3>
+            <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4">Top 5 热销商品（{periodLabel}）</h3>
               {topProducts.length > 0 ? (
                 <ResponsiveContainer width="100%" height={280}>
                   <BarChart data={topProducts} layout="vertical">
@@ -383,26 +383,26 @@ export default function Reports() {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <p className="text-sm text-card-foreground/40 py-20 text-center">所选时段暂无出库记录</p>
+                <p className="text-sm text-card-foreground py-20 text-center">所选时段暂无出库记录</p>
               )}
             </div>
           </div>
-          <div className="bg-card rounded-2xl shadow-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-foreground/10"><h3 className="text-base font-semibold text-card-foreground">品类明细</h3></div>
+          <div className="bg-card rounded-3xl shadow-card overflow-hidden border border-border/50">
+            <div className="px-6 py-4 border-b border-border"><h3 className="text-sm font-semibold text-foreground">品类明细</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-card-foreground/10">
-                    <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">品类</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">SKU数</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">库存总量</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">库存金额</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">占比</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3.5 px-5 font-semibold text-muted-foreground text-xs">品类</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">SKU数</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">库存总量</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">库存金额</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">占比</th>
                   </tr>
                 </thead>
                 <tbody>
                   {categoryData.map((cat, idx) => (
-                    <tr key={cat.category} className={`border-b border-card-foreground/5 last:border-0 ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                    <tr key={cat.category} className={`border-b border-border/50 last:border-0 ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
                       <td className="py-3.5 px-5 font-medium text-card-foreground">{cat.category}</td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{cat.skuCount}</td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{cat.totalQty}</td>
@@ -420,8 +420,8 @@ export default function Reports() {
       {activeTab === 'health' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-base font-semibold text-card-foreground mb-4">库存状态分布</h3>
+            <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4">库存状态分布</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
                   <Pie data={healthDist} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={100}
@@ -433,8 +433,8 @@ export default function Reports() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-base font-semibold text-card-foreground mb-4">库存总量变化趋势（近30天）</h3>
+            <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4">库存总量变化趋势（近30天）</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={stockHistory}>
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }} />
@@ -445,34 +445,34 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
           </div>
-          <div className="bg-card rounded-2xl shadow-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-foreground/10"><h3 className="text-base font-semibold text-card-foreground">预警/告急商品</h3></div>
+          <div className="bg-card rounded-3xl shadow-card overflow-hidden border border-border/50">
+            <div className="px-6 py-4 border-b border-border"><h3 className="text-sm font-semibold text-foreground">预警/告急商品</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-card-foreground/10">
-                    <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">SKU</th>
-                    <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">品名</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">当前库存</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">预警阈值</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">缺口</th>
-                    <th className="text-center py-3.5 px-5 font-semibold text-card-foreground/50">状态</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3.5 px-5 font-semibold text-muted-foreground text-xs">SKU</th>
+                    <th className="text-left py-3.5 px-5 font-semibold text-muted-foreground text-xs">品名</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">当前库存</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">预警阈值</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">缺口</th>
+                    <th className="text-center py-3.5 px-5 font-semibold text-muted-foreground text-xs">状态</th>
                   </tr>
                 </thead>
                 <tbody>
                   {alertItems.map((item, idx) => (
-                    <tr key={item.id} className={`border-b border-card-foreground/5 last:border-0 ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                    <tr key={item.id} className={`border-b border-border/50 last:border-0 ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
                       <td className="py-3.5 px-5 font-mono text-xs text-card-foreground/60">{item.sku}</td>
-                      <td className="py-3.5 px-5 text-card-foreground">{item.name} <span className="text-card-foreground/40">{item.spec}</span></td>
+                      <td className="py-3.5 px-5 text-card-foreground">{item.name} <span className="text-card-foreground">{item.spec}</span></td>
                       <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">{item.stock}</td>
-                      <td className="py-3.5 px-5 text-right text-card-foreground/40">{item.threshold}</td>
+                      <td className="py-3.5 px-5 text-right text-card-foreground">{item.threshold}</td>
                       <td className="py-3.5 px-5 text-right text-destructive font-semibold">{item.stock - item.threshold}</td>
                       <td className="py-3.5 px-5 text-center"><StockBadge status={getStockStatus(item.stock, item.threshold)} /></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              {alertItems.length === 0 && <p className="text-sm text-card-foreground/40 py-12 text-center">库存状态良好</p>}
+              {alertItems.length === 0 && <p className="text-sm text-card-foreground py-12 text-center">库存状态良好</p>}
             </div>
           </div>
         </div>
@@ -481,8 +481,8 @@ export default function Reports() {
       {activeTab === 'reconciliation' && (
         <div className="space-y-4">
           {discChartData.length > 0 && (
-            <div className="bg-card rounded-2xl shadow-card p-6">
-              <h3 className="text-base font-semibold text-card-foreground mb-4">差异值分布（{periodLabel}）</h3>
+            <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
+              <h3 className="text-sm font-semibold text-foreground mb-4">差异值分布（{periodLabel}）</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={discChartData}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
@@ -498,39 +498,39 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
           )}
-          <div className="bg-card rounded-2xl shadow-card overflow-hidden">
-            <div className="px-6 py-4 border-b border-card-foreground/10 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-card-foreground">差异对账明细</h3>
-              <span className="text-xs text-card-foreground/40">{periodLabel}</span>
+          <div className="bg-card rounded-3xl shadow-card overflow-hidden border border-border/50">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">差异对账明细</h3>
+              <span className="text-xs text-card-foreground">{periodLabel}</span>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-card-foreground/10">
-                    <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">商品</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">期初库存</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">入库</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">出库</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">理论期末</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">实际库存</th>
-                    <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">差异</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3.5 px-5 font-semibold text-muted-foreground text-xs">商品</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">期初库存</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">入库</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">出库</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">理论期末</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">实际库存</th>
+                    <th className="text-right py-3.5 px-5 font-semibold text-muted-foreground text-xs">差异</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reconData.map((row, idx) => (
-                    <tr key={row.id} className={`border-b border-card-foreground/5 last:border-0 ${row.discrepancy !== 0 ? 'bg-destructive/5' : idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
-                      <td className="py-3.5 px-5 font-medium text-card-foreground">{row.name} <span className="text-card-foreground/40">{row.spec}</span></td>
+                    <tr key={row.id} className={`border-b border-border/50 last:border-0 ${row.discrepancy !== 0 ? 'bg-destructive/5' : idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                      <td className="py-3.5 px-5 font-medium text-card-foreground">{row.name} <span className="text-card-foreground">{row.spec}</span></td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{row.opening}</td>
                       <td className="py-3.5 px-5 text-right text-warning">+{row.inbound}</td>
                       <td className="py-3.5 px-5 text-right text-primary">-{row.outbound}</td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{row.theoreticalClose}</td>
                       <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">{row.actualClose}</td>
-                      <td className={`py-3.5 px-5 text-right font-bold ${row.discrepancy !== 0 ? 'text-destructive' : 'text-card-foreground/40'}`}>
+                      <td className={`py-3.5 px-5 text-right font-bold ${row.discrepancy !== 0 ? 'text-destructive' : 'text-card-foreground'}`}>
                         {row.discrepancy > 0 ? `+${row.discrepancy}` : row.discrepancy}
                       </td>
                     </tr>
                   ))}
-                  <tr className="border-t border-card-foreground/10 font-semibold">
+                  <tr className="border-t border-border font-semibold">
                     <td className="py-3.5 px-5 text-card-foreground">合计</td>
                     <td className="py-3.5 px-5 text-right text-card-foreground">{reconData.reduce((s, r) => s + r.opening, 0)}</td>
                     <td className="py-3.5 px-5 text-right text-warning">+{reconData.reduce((s, r) => s + r.inbound, 0)}</td>
