@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { POBadge } from '@/components/StatusBadge';
 import { Plus, Check, X, Eye, Loader2 } from 'lucide-react';
 import type { POStatus } from '@/types/inventory';
-import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus, useReceivePO } from '@/hooks/useInventoryData';
+import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus, useReceivePO, useAddProduct } from '@/hooks/useInventoryData';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ export default function PurchaseOrders() {
   const createPO = useCreatePO();
   const updatePOStatus = useUpdatePOStatus();
   const receivePO = useReceivePO();
+  const addProduct = useAddProduct();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -26,6 +27,14 @@ export default function PurchaseOrders() {
   const [poPrice, setPOPrice] = useState('');
   const [poSupplier, setPOSupplier] = useState('');
   const [poNote, setPONote] = useState('');
+
+  // New product form
+  const [isNewProduct, setIsNewProduct] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newSku, setNewSku] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [newSpec, setNewSpec] = useState('');
+  const [newThreshold, setNewThreshold] = useState('20');
 
   useEffect(() => {
     const prefillId = searchParams.get('prefill');
@@ -38,6 +47,7 @@ export default function PurchaseOrders() {
     setPOQty(String(suggestedQty));
     setPONote(`库存预警补货 - ${item.name} ${item.spec}`);
     setShowForm(true);
+    setIsNewProduct(false);
     setSearchParams({}, { replace: true });
   }, [searchParams, items, loadingItems, setSearchParams]);
 
@@ -49,22 +59,49 @@ export default function PurchaseOrders() {
     return item ? `${item.name} ${item.spec}` : id;
   };
 
+  const resetForm = () => {
+    setPOItemId(''); setPOQty(''); setPOPrice(''); setPOSupplier(''); setPONote('');
+    setIsNewProduct(false); setNewName(''); setNewSku(''); setNewCategory(''); setNewSpec(''); setNewThreshold('20');
+  };
+
   const handleCreate = async (status: POStatus) => {
-    if (!poItemId || !poQty || !poPrice || !poSupplier) return;
+    // Validate fields depending on mode
+    if (isNewProduct) {
+      if (!newName || !newSku || !newCategory || !newSpec || !poQty || !poPrice || !poSupplier) return;
+    } else {
+      if (!poItemId || !poQty || !poPrice || !poSupplier) return;
+    }
+
     try {
+      let productId = poItemId;
+
+      // If new product mode, create product first
+      if (isNewProduct) {
+        const newProduct = await addProduct.mutateAsync({
+          sku: newSku,
+          name: newName,
+          category: newCategory,
+          spec: newSpec,
+          threshold: Number(newThreshold) || 20,
+          unitPrice: Number(poPrice),
+        });
+        productId = newProduct.id;
+      }
+
       const ts = Date.now().toString(36).toUpperCase();
       const num = purchaseOrders.length + 1;
       await createPO.mutateAsync({
         poNumber: `PO-${ts}-${String(num).padStart(3, '0')}`,
-        items: [{ itemId: poItemId, quantity: Number(poQty), unitPrice: Number(poPrice) }],
+        items: [{ itemId: productId, quantity: Number(poQty), unitPrice: Number(poPrice) }],
         supplier: poSupplier, status, createdDate: new Date().toISOString().split('T')[0],
         expectedDate: '', note: poNote,
       });
-      setPOItemId(''); setPOQty(''); setPOPrice(''); setPOSupplier(''); setPONote('');
+      resetForm();
       setShowForm(false);
       toast({ title: status === 'draft' ? '草稿已保存' : '采购单已提交' });
-    } catch {
-      toast({ title: '操作失败', description: '请稍后重试', variant: 'destructive' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '请稍后重试';
+      toast({ title: '操作失败', description: msg.includes('products_sku_key') ? 'SKU 已存在，请更换' : msg, variant: 'destructive' });
     }
   };
 
@@ -89,6 +126,11 @@ export default function PurchaseOrders() {
 
   const sorted = [...purchaseOrders].sort((a, b) => b.createdDate.localeCompare(a.createdDate));
   const selectedPO = detailPO ? purchaseOrders.find((po) => po.poNumber === detailPO) : null;
+  const formBusy = createPO.isPending || addProduct.isPending;
+
+  const canSubmit = isNewProduct
+    ? !!(newName && newSku && newCategory && newSpec && poQty && poPrice && poSupplier)
+    : !!(poItemId && poQty && poPrice && poSupplier);
 
   return (
     <div className="space-y-4 animate-fade-in-up">
@@ -104,27 +146,71 @@ export default function PurchaseOrders() {
 
       {showForm && (
         <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50 animate-scale-in">
-          <h3 className="text-sm font-semibold text-foreground mb-4">新建采购单</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">商品 *</label>
-              <select value={poItemId} onChange={(e) => { setPOItemId(e.target.value); const item = items.find((i) => i.id === e.target.value); if (item) setPOPrice(String(item.unitPrice)); }} className={inputCls}>
-                <option value="">选择商品</option>
-                {items.map((item) => (<option key={item.id} value={item.id}>{item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]</option>))}
-              </select>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-foreground">新建采购单</h3>
+            <div className="flex bg-muted/50 rounded-lg p-0.5">
+              <button
+                onClick={() => { setIsNewProduct(false); setPOItemId(''); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${!isNewProduct ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                选择已有商品
+              </button>
+              <button
+                onClick={() => { setIsNewProduct(true); setPOItemId(''); }}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${isNewProduct ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+              >
+                新增商品
+              </button>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {!isNewProduct ? (
+              /* Existing product selector */
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">商品 *</label>
+                <select value={poItemId} onChange={(e) => { setPOItemId(e.target.value); const item = items.find((i) => i.id === e.target.value); if (item) setPOPrice(String(item.unitPrice)); }} className={inputCls}>
+                  <option value="">选择商品</option>
+                  {items.map((item) => (<option key={item.id} value={item.id}>{item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]</option>))}
+                </select>
+              </div>
+            ) : (
+              /* New product fields */
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">商品名称 *</label>
+                  <input type="text" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="例: 基础圆领T恤" className={inputCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">SKU *</label>
+                  <input type="text" value={newSku} onChange={(e) => setNewSku(e.target.value)} placeholder="例: TS-003" className={inputCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">品类 *</label>
+                  <input type="text" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="例: T恤" className={inputCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">规格 *</label>
+                  <input type="text" value={newSpec} onChange={(e) => setNewSpec(e.target.value)} placeholder="例: 白色/L" className={inputCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1.5">预警阈值</label>
+                  <input type="number" value={newThreshold} onChange={(e) => setNewThreshold(e.target.value)} placeholder="20" className={inputCls} />
+                </div>
+              </>
+            )}
             <div><label className="block text-xs font-medium text-muted-foreground mb-1.5">数量 *</label><input type="number" value={poQty} onChange={(e) => setPOQty(e.target.value)} placeholder="采购数量" className={inputCls} /></div>
             <div><label className="block text-xs font-medium text-muted-foreground mb-1.5">预估单价 *</label><input type="number" value={poPrice} onChange={(e) => setPOPrice(e.target.value)} placeholder="单价" className={inputCls} /></div>
             <div><label className="block text-xs font-medium text-muted-foreground mb-1.5">供应商 *</label><input type="text" value={poSupplier} onChange={(e) => setPOSupplier(e.target.value)} placeholder="供应商名称" className={inputCls} /></div>
             <div className="md:col-span-2"><label className="block text-xs font-medium text-muted-foreground mb-1.5">备注</label><input type="text" value={poNote} onChange={(e) => setPONote(e.target.value)} placeholder="备注" className={inputCls} /></div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <button onClick={() => setShowForm(false)} className="px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-all">取消</button>
-            <button onClick={() => handleCreate('draft')} disabled={!poItemId || !poQty || !poPrice || !poSupplier || createPO.isPending}
+            <button onClick={() => { resetForm(); setShowForm(false); }} className="px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-all">取消</button>
+            <button onClick={() => handleCreate('draft')} disabled={!canSubmit || formBusy}
               className="px-4 py-2.5 border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-all disabled:opacity-40">保存草稿</button>
-            <button onClick={() => handleCreate('pending')} disabled={!poItemId || !poQty || !poPrice || !poSupplier || createPO.isPending}
+            <button onClick={() => handleCreate('pending')} disabled={!canSubmit || formBusy}
               className="flex items-center gap-2 px-4 py-2.5 bg-[#1A1A2E] text-white rounded-xl text-sm font-semibold hover:bg-[#2A2A3E] transition-all disabled:opacity-40">
-              {createPO.isPending && <Loader2 className="w-3 h-3 animate-spin" />}提交审批
+              {formBusy && <Loader2 className="w-3 h-3 animate-spin" />}提交审批
             </button>
           </div>
         </div>

@@ -66,12 +66,12 @@ export default function Dashboard() {
 
       {/* === BENTO GRID === */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
-        {/* Row 1: Stats cards (small) + chart (tall, spans 2 rows) */}
+        {/* Row 1: Stats cards (small) + chart (tall) */}
         <StatsCard title="总 SKU 数" value={items.length} icon={Package} />
         <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} variant="warning" subtitle={warningItems.length > 0 ? '需要关注' : '状态良好'} />
 
-        {/* Chart card - spans 2 cols on lg, 3 rows to align with left cards */}
-        <div className="col-span-2 row-span-3 bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col">
+        {/* Chart card - spans 2 cols on lg, row-span dynamically based on role */}
+        <div className={`col-span-2 ${isBoss ? 'row-span-3' : 'row-span-2'} bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col`}>
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-white/60">月度进出趋势</h3>
             <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">近6月</span>

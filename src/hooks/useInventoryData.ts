@@ -204,6 +204,32 @@ export function useReceivePO() {
   });
 }
 
+export function useAddProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (product: { sku: string; name: string; category: string; spec: string; threshold: number; unitPrice: number }) => {
+      const { data, error } = await supabase
+        .from('products')
+        .insert({
+          sku: product.sku,
+          name: product.name,
+          category: product.category,
+          spec: product.spec,
+          stock: 0,
+          threshold: product.threshold,
+          unit_price: product.unitPrice,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return mapProduct(data);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+    },
+  });
+}
+
 export function useUpdatePOStatus() {
   const qc = useQueryClient();
   return useMutation({
