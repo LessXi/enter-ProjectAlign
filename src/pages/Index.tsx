@@ -70,8 +70,8 @@ export default function Dashboard() {
         <StatsCard title="总 SKU 数" value={items.length} icon={Package} />
         <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} variant="warning" subtitle={warningItems.length > 0 ? '需要关注' : '状态良好'} />
 
-        {/* Chart card - spans 2 cols on lg, 2 rows */}
-        <div className="col-span-2 row-span-2 bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated">
+        {/* Chart card - spans 2 cols on lg, 3 rows to align with left cards */}
+        <div className="col-span-2 row-span-3 bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-white/60">月度进出趋势</h3>
             <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">近6月</span>
@@ -80,7 +80,7 @@ export default function Dashboard() {
             <p className="text-3xl font-bold text-white">¥{(monthInbound + monthOutbound).toLocaleString()}</p>
             <p className="text-xs text-white/40 pb-1">本月总流水</p>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" className="flex-1 min-h-0" height="100%">
             <BarChart data={miniChartData} barGap={4}>
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
@@ -158,7 +158,7 @@ export default function Dashboard() {
         {/* Recent transactions - narrower */}
         <div className="lg:col-span-2 bg-card rounded-3xl shadow-card p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
           <h3 className="text-sm font-semibold text-foreground mb-4">最近流水</h3>
-          <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
+          <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
             {recentTxs.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-2.5">
