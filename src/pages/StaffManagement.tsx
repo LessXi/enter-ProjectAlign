@@ -22,7 +22,7 @@ const roleMeta: Record<Role, { label: string; icon: typeof User; className: stri
 type DialogMode = 'create' | 'edit' | null;
 
 export default function StaffManagement() {
-  const { role, session, user: currentUser } = useAuth();
+  const { role, session, user: currentUser, signOut } = useAuth();
   const [users, setUsers] = useState<StaffUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogMode, setDialogMode] = useState<DialogMode>(null);
@@ -64,8 +64,12 @@ export default function StaffManagement() {
       });
       if (error) throw error;
       setUsers(data?.users ?? []);
-    } catch {
-      console.error('Failed to fetch users');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : '获取员工列表失败';
+      console.error('Failed to fetch users:', msg);
+      if (msg.includes('Unauthorized') || msg.includes('JWT')) {
+        showToast('error', '登录已过期，请重新登录');
+      }
     } finally {
       setLoading(false);
     }
@@ -150,6 +154,12 @@ export default function StaffManagement() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       setDialogMode(null);
+      // If user changed their own password, force re-login
+      if (formPassword && editingUser.id === currentUser?.id) {
+        showToast('success', '密码已修改，请重新登录');
+        setTimeout(() => signOut(), 1500);
+        return;
+      }
       showToast('success', `已更新 ${formName} 的信息`);
       fetchUsers();
     } catch (e: unknown) {
