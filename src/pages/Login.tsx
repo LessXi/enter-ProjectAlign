@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { Role } from '@/types/inventory';
-import { Warehouse, Loader2, User, ShoppingCart } from 'lucide-react';
+import { Warehouse, Loader2, User, ShoppingCart, Eye, EyeOff } from 'lucide-react';
 
 type Tab = 'login' | 'register';
 
@@ -19,6 +19,7 @@ export default function Login() {
   const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<Role>('warehouse');
   const [loading, setLoading] = useState(false);
@@ -124,14 +125,23 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium mb-1.5">密码 *</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="输入密码（至少6位）"
-                onKeyDown={(e) => e.key === 'Enter' && tab === 'login' && handleLogin()}
-                className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-              />
+              <div className="relative">
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="输入密码（至少6位）"
+                  onKeyDown={(e) => e.key === 'Enter' && tab === 'login' && handleLogin()}
+                  className="w-full bg-background border rounded-lg px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             {tab === 'register' && (

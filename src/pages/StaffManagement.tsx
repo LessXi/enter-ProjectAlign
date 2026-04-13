@@ -43,7 +43,8 @@ export default function StaffManagement() {
   // Created credentials display
   const [createdCreds, setCreatedCreds] = useState<{ name: string; email: string; password: string; role: string } | null>(null);
 
-  // Delete confirm
+  // Password visibility for credentials card
+  const [showCredsPwd, setShowCredsPwd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -85,6 +86,7 @@ export default function StaffManagement() {
     setEditingUser(null);
     setDialogMode('create');
     setCreatedCreds(null);
+    setShowCredsPwd(false);
   };
 
   const openEdit = (u: StaffUser) => {
@@ -236,7 +238,14 @@ export default function StaffManagement() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground">密码：</span>
-              <span className="font-medium font-mono">{createdCreds.password}</span>
+              <span className="font-medium font-mono">{showCredsPwd ? createdCreds.password : '********'}</span>
+              <button
+                onClick={() => setShowCredsPwd(!showCredsPwd)}
+                className="p-1 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+                title={showCredsPwd ? '隐藏密码' : '显示密码'}
+              >
+                {showCredsPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              </button>
               <button
                 onClick={() => copyToClipboard(`姓名: ${createdCreds.name}\n邮箱: ${createdCreds.email}\n密码: ${createdCreds.password}\n角色: ${createdCreds.role}`)}
                 className="p-1 rounded hover:bg-secondary transition-colors"
