@@ -1,18 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { POBadge } from '@/components/StatusBadge';
 import { Plus, Check, X, Eye, Loader2 } from 'lucide-react';
 import type { POStatus } from '@/types/inventory';
 import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus } from '@/hooks/useInventoryData';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'react-router-dom';
 
 export default function PurchaseOrders() {
   const { role: currentRole } = useAuth();
-  const { data: items = [] } = useProducts();
+  const { data: items = [], isLoading: loadingItems } = useProducts();
   const { data: purchaseOrders = [], isLoading } = usePurchaseOrders();
   const createPO = useCreatePO();
   const updatePOStatus = useUpdatePOStatus();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [showForm, setShowForm] = useState(false);
   const [detailPO, setDetailPO] = useState<string | null>(null);
@@ -21,6 +23,23 @@ export default function PurchaseOrders() {
   const [poPrice, setPOPrice] = useState('');
   const [poSupplier, setPOSupplier] = useState('');
   const [poNote, setPONote] = useState('');
+
+  // Auto-open form and pre-fill when navigating with ?prefill=<productId>
+  useEffect(() => {
+    const prefillId = searchParams.get('prefill');
+    if (!prefillId || loadingItems || items.length === 0) return;
+    const item = items.find((i) => i.id === prefillId);
+    if (!item) return;
+    setPOItemId(item.id);
+    setPOPrice(String(item.unitPrice));
+    // Suggest quantity: threshold - stock (at least 1)
+    const suggestedQty = Math.max(item.threshold - item.stock, 1);
+    setPOQty(String(suggestedQty));
+    setPONote(`库存预警补货 - ${item.name} ${item.spec}`);
+    setShowForm(true);
+    // Clear the search param so refreshing doesn't re-trigger
+    setSearchParams({}, { replace: true });
+  }, [searchParams, items, loadingItems, setSearchParams]);
 
   const isBoss = currentRole === 'boss';
   const isPurchasing = currentRole === 'purchasing';

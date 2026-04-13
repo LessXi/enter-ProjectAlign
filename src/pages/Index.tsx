@@ -161,7 +161,7 @@ export default function Dashboard() {
                       {isPurchasing && (
                         <td className="py-2 text-right">
                           <Link
-                            to="/purchase-orders"
+                            to={`/purchase-orders?prefill=${item.id}`}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
                           >
                             <ShoppingCart className="w-3 h-3" />
