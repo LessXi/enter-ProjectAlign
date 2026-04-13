@@ -4,8 +4,8 @@ import { getStockStatus } from '@/lib/stockStatus';
 import { Loader2, Calendar } from 'lucide-react';
 import { useProducts, useTransactions } from '@/hooks/useInventoryData';
 import {
-  BarChart, Bar, Line, PieChart, Pie, Cell,
-  ComposedChart, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  BarChart, Bar, PieChart, Pie, Cell,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   ReferenceLine,
 } from 'recharts';
 
@@ -395,26 +395,30 @@ export default function Reports() {
           <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
             <h3 className="text-sm font-semibold text-foreground mb-4">{amountChartTitle}</h3>
             <ResponsiveContainer width="100%" height={320}>
-              <ComposedChart data={amountChartData}>
+              <BarChart data={amountChartData}>
                 <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
                   interval={amountChartData.length > 15 ? Math.floor(amountChartData.length / 12) : 0}
                   padding={{ left: 10, right: 30 }} />
-                <YAxis yAxisId="left" axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'hsl(0,0%,40%)' }} />
+                <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
                 <Tooltip
                   cursor={{ fill: 'rgba(0,0,0,0.04)' }}
-                  formatter={(value: number, name: string) => {
-                    if (name === '入库量' || name === '出库量') return [`${value}件`, name];
-                    return [`¥${value.toLocaleString()}`, name];
+                  content={({ active, payload, label }) => {
+                    if (!active || !payload?.length) return null;
+                    const d = payload[0]?.payload;
+                    return (
+                      <div className="bg-[#1A1A1A] text-white text-xs rounded-xl px-4 py-3 shadow-lg">
+                        <p className="font-medium mb-2">{label}</p>
+                        <p className="text-lavender">入库金额: ¥{(d?.inbound ?? 0).toLocaleString()}{d?.qtyIn ? ` (${d.qtyIn}件)` : ''}</p>
+                        <p className="text-mint">出库金额: ¥{(d?.outbound ?? 0).toLocaleString()}{d?.qtyOut ? ` (${d.qtyOut}件)` : ''}</p>
+                        <p className="text-amber-300 mt-1 border-t border-white/10 pt-1.5">利润: ¥{(d?.profit ?? 0).toLocaleString()}</p>
+                      </div>
+                    );
                   }}
-                  contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }}
                 />
                 <Legend />
-                <Bar yAxisId="left" dataKey="inbound" name="入库金额（支出）" fill="hsl(255,80%,82%)" radius={[6, 6, 0, 0]} />
-                <Bar yAxisId="left" dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
-                <Line yAxisId="right" type="monotone" dataKey="qtyIn" name="入库量" stroke="hsl(255,80%,62%)" strokeWidth={2} dot={false} strokeDasharray="6 3" />
-                <Line yAxisId="right" type="monotone" dataKey="qtyOut" name="出库量" stroke="hsl(125,85%,45%)" strokeWidth={2} dot={false} strokeDasharray="6 3" />
-              </ComposedChart>
+                <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(255,80%,82%)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
