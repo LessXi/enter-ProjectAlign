@@ -1,99 +1,98 @@
-# 方案：三项修复 — 账号登录 + 现金流逻辑 + 报表时间选择
+# UI Redesign: Pastel-Crypto Style
 
-## 出入库逻辑全面审查结果
+## Context
+The current UI uses a corporate indigo/dark sidebar design. The user wants the visual style of the "pastel-crypto-data" component: sage green backgrounds, dark (#1A1A1A) cards, mint green (#A4F5A6) accents, purple (#B3A1FF) highlights, large rounded corners (24-32px), and premium hover animations.
 
-### 业务定义
-- **入库** = 从供应商进货 = 花钱（采购成本）→ 库存增加
-- **出库** = 向客户发货 = 赚钱（销售收入）→ 库存减少
+## Design System Changes
 
-### 审查通过（无需修改）
+### 1. `src/index.css` — New Color Tokens
+Remap all CSS variables to the pastel-crypto palette:
+- **background**: sage green `~100 12% 83%` (#D5DCD4)
+- **card**: dark `0 0% 10%` (#1A1A1A), foreground: white
+- **primary**: mint green `125 85% 81%` (#A4F5A6), foreground: dark
+- **secondary**: light gray `0 0% 96%` (#F5F5F5)
+- **accent**: purple `255 48% 81%` (#B3A1FF), foreground: white
+- **sidebar**: dark `0 0% 10%`, active: mint green
+- **success**: mint green, **warning**: amber, **destructive**: coral red
+- **border**: subtle dark transparent
+- **radius**: `1.5rem` (24px) for large roundedness
+- **shadow-card**: subtle dark shadow, **shadow-elevated**: deeper
+- Add keyframe animations: fadeInUp, scaleIn, pulse-slow
+- Dark mode: deeper sage/black variants
 
-| 位置 | 逻辑 | 状态 |
-|------|------|------|
-| 数据库 `add_transaction` 函数 | inbound→stock+qty, outbound→stock-qty | 正确 |
-| `Inbound.tsx` 表单 | counterparty 标记为"供应商"，type='inbound' | 正确 |
-| `Outbound.tsx` 表单 | counterparty 标记为"客户"，type='outbound' | 正确 |
-| `Inbound.tsx` 历史表 | 数量显示 `+N`(绿色) = 库存维度正确 | 正确 |
-| `Outbound.tsx` 历史表 | 数量显示 `-N`(红色) = 库存维度正确 | 正确 |
-| `Index.tsx` 最近流水表 | 入库+绿/出库-红 = 库存维度正确 | 正确 |
-| `Reports.tsx` 差异对账表 | 入库+绿/出库-红 = 库存盘点视角正确 | 正确 |
-| `useInventoryData.ts` RPC调用 | 参数映射正确 | 正确 |
+### 2. `tailwind.config.ts` — Animation Utilities
+- Add `fadeInUp`, `scaleIn`, `pulse-slow` keyframes & animation classes
+- borderRadius `lg` = 1.5rem, `xl` = 2rem (32px)
 
-### 需要修复的问题
+### 3. Component Updates
 
-| # | 文件 | 行号 | 问题 | 修正 |
-|---|------|------|------|------|
-| 1 | `Reports.tsx` | L71 | `netFlow = monthInbound - monthOutbound` | → `monthOutbound - monthInbound`（出库收入-入库成本=净现金流） |
-| 2 | `Reports.tsx` | L205 | 标签"净流入" | → "净现金流" |
-| 3 | `Index.tsx` | L78 | 出库额用红色(destructive) | → 绿色(success)，因为出库=销售收入 |
-| 4 | `Index.tsx` | L77 | 入库额用蓝色(info) | → 橙色(warning)，因为入库=采购支出 |
+#### `src/components/AppSidebar.tsx`
+- Dark bg (#1A1A1A) stays via `bg-sidebar`
+- Active link: mint green bg with dark text
+- Logo icon: mint green circle instead of indigo square
+- Rounder items (rounded-xl)
 
-### 备注
-- 库存页面的 +/- 和红/绿 是**库存数量**视角，入库=+绿(库存增)、出库=-红(库存减)，**正确不改**
-- 报表统计金额卡片和净现金流是**资金**视角，需要修正颜色和公式
-- 图表中入库/出库柱状图使用中性色(靛蓝/琥珀)做区分，不带正负语义，**正确不改**
+#### `src/components/Layout.tsx`
+- Header: dark bg (`bg-card`) with white text
+- Role badges: mint/purple/amber pill styles
+- Logout button: ghost on dark
 
----
+#### `src/components/StatsCard.tsx`
+- Dark card bg (auto from `bg-card`), white text (auto from `card-foreground`)
+- Icon containers: mint/purple/amber circles (rounded-full)
+- Hover: subtle lift + scale
 
-## 修改1：账号登录系统
+#### `src/components/StatusBadge.tsx`
+- Badges: mint green for "normal", amber for "warning", coral for "critical"
+- More rounded (rounded-full pills)
 
-### 数据库变更
-- **新建 `profiles` 表**：`id uuid PK = auth.uid()`, `display_name text`, `role text CHECK('warehouse','purchasing','boss')`
-- **创建触发器**：`auth.users` 新用户自动创建 profile（默认 role='warehouse'）
-- **RLS**：用户只能读写自己的 profile
-- **启用 auto-confirm email**
+#### `src/pages/Login.tsx`
+- Sage green full-page bg (auto)
+- Card: dark bg with white text
+- Input: dark bg with lighter border
+- Tab switcher: mint green active
+- Role buttons: dark border, mint accent on select
+- Primary button: mint green
 
-### 新建文件
-- `src/hooks/useAuth.ts` — auth 状态 hook
-  - `onAuthStateChange` 监听 → 查询 profile → 提供 `{user, session, role, loading, signIn, signUp, signOut}`
-- `src/pages/Login.tsx` — 登录/注册页
-  - 登录 Tab：邮箱+密码
-  - 注册 Tab：邮箱+密码+角色选择(仓管/采购/老板)
-  - 注册后更新 profile.role
+#### `src/pages/Index.tsx`
+- Stats cards auto-styled via design system
+- Chart colors: mint green + purple bars
+- Warning table: dark rows, mint/purple accents
 
-### 修改文件
-| 文件 | 变更 |
-|------|------|
-| `src/router.tsx` | 添加 `/login`; Layout 包裹 AuthGuard（未登录→重定向login） |
-| `src/components/Layout.tsx` | 角色切换器 → 用户名+角色标签+退出按钮 |
-| `src/components/AppSidebar.tsx` | `currentRole` 改从 useAuth 读取 |
-| `src/pages/Index.tsx` | `currentRole` 改从 useAuth 读取 |
-| `src/pages/PurchaseOrders.tsx` | `currentRole` 改从 useAuth 读取 |
-| `src/store/inventoryStore.ts` | 可删除（role不再本地管理） |
+#### `src/pages/Inventory.tsx`, `Inbound.tsx`, `Outbound.tsx`, `PurchaseOrders.tsx`
+- Tables: dark header, alternating dark rows (via secondary)
+- Inputs/selects: dark bg, light border, mint focus ring
+- Buttons: mint primary, purple secondary
 
----
+#### `src/pages/Reports.tsx`
+- Chart colors: mint green + purple (instead of indigo + amber)
+- Pill switchers: dark bg, mint active
+- KPI cards: auto from design system
 
-## 修改3：报表时间选择器
+#### `src/pages/StaffManagement.tsx`
+- Dialog: dark bg with white text
+- Table: same dark theme
 
-### 修改文件：`src/pages/Reports.tsx`
+### Files to Modify
+1. `src/index.css` — Complete token overhaul
+2. `tailwind.config.ts` — Animations, larger radius
+3. `src/components/AppSidebar.tsx` — Rounder, mint active state
+4. `src/components/Layout.tsx` — Dark header
+5. `src/components/StatsCard.tsx` — Icon circles, hover animation
+6. `src/components/StatusBadge.tsx` — Rounded-full pills
+7. `src/pages/Login.tsx` — Dark card, mint accents
+8. `src/pages/Index.tsx` — Chart colors
+9. `src/pages/Inventory.tsx` — Input/table styling
+10. `src/pages/Inbound.tsx` — Form styling
+11. `src/pages/Outbound.tsx` — Form styling
+12. `src/pages/PurchaseOrders.tsx` — Form/table styling
+13. `src/pages/Reports.tsx` — Chart colors, switcher pills
+14. `src/pages/StaffManagement.tsx` — Dialog/table styling
 
-**快捷选项按钮组（默认选中"本月"）：**
-- 今日 → startDate=今天, endDate=今天
-- 本周 → startDate=本周一, endDate=今天
-- 本月 → startDate=本月1号, endDate=今天
-- 本季度 → startDate=本季度第一天, endDate=今天
-- 本年 → startDate=1月1日, endDate=今天
-- 自定义 → 展开开始日期+结束日期两个 `<input type="date">`
-
-**UI 布局：**
-- 标题行"对账报表"右侧，快捷按钮组+自定义日期选择器横排
-- 样式与 Tab 栏一致（pill 按钮），选中态高亮
-
-**数据过滤：**
-- `filteredTransactions = transactions.filter(t => t.date >= startDate && t.date <= endDate)`
-- 所有 Tab 的图表/计算统一使用 filteredTransactions
-- 月度图表根据范围动态生成月份
-- 每日趋势图根据范围动态生成日期
-- 金额统计卡片标题动态显示选中的时间段（如"本月入库总额"→"2026-04 入库总额"）
-
----
-
-## 执行顺序
-1. 修复现金流逻辑（最小改动，立即见效）
-2. 添加报表时间选择器
-3. 实现账号登录系统（最大改动）
-
-## 验证方式
-1. 现金流：入库额>出库额时净现金流为负（红色），反之为正（绿色）
-2. 时间选择：切换日期范围后图表数据即时更新
-3. 登录：3个不同角色账号登录后权限菜单不同
+### Verification
+- All pages should render with sage green background, dark cards, mint/purple accents
+- Text contrast passes WCAG AA on dark cards
+- Hover animations (lift + scale) on cards
+- Login page: dark card on sage green bg
+- Charts use mint green + purple colors
+- Sidebar: dark with mint active
