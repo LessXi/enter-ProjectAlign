@@ -205,6 +205,42 @@ export default function Reports() {
     ? `${dateRange.start} ~ ${dateRange.end}`
     : presets.find((p) => p.key === preset)?.label ?? '';
 
+  // Determine whether to show daily or monthly granularity for the amount chart
+  const useDaily = useMemo(() => {
+    const diffMs = new Date(dateRange.end).getTime() - new Date(dateRange.start).getTime();
+    const diffDays = diffMs / (1000 * 60 * 60 * 24);
+    // Use daily granularity for ranges up to ~62 days (about 2 months)
+    return diffDays <= 62;
+  }, [dateRange]);
+
+  const dailyAmountData = useMemo(() => {
+    const result: { label: string; date: string; inbound: number; outbound: number }[] = [];
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    for (const cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+      const dateKey = toDateStr(new Date(cursor));
+      result.push({ date: dateKey, label: `${cursor.getMonth() + 1}/${cursor.getDate()}`, inbound: 0, outbound: 0 });
+    }
+    filteredTx.forEach((t) => {
+      const entry = result.find((r) => r.date === t.date);
+      if (entry) {
+        const val = t.quantity * t.unitPrice;
+        if (t.type === 'inbound') entry.inbound += val;
+        else entry.outbound += val;
+      }
+    });
+    return result;
+  }, [filteredTx, dateRange]);
+
+  const amountChartData = useDaily
+    ? dailyAmountData
+    : monthlyData.map((m) => ({ ...m, label: m.month }));
+
+  const amountChartTitle = useMemo(() => {
+    const granularity = useDaily ? '每日' : '月度';
+    return `${granularity}进出金额对比（${periodLabel}）`;
+  }, [useDaily, periodLabel]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -296,10 +332,12 @@ export default function Reports() {
           </div>
 
           <div className="bg-card rounded-lg shadow-card p-5">
-            <h3 className="text-base font-semibold mb-4">月度进出金额对比</h3>
+            <h3 className="text-base font-semibold mb-4">{amountChartTitle}</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} />
+              <BarChart data={amountChartData}>
+                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11 }}
+                  interval={amountChartData.length > 15 ? Math.floor(amountChartData.length / 12) : 0}
+                  padding={{ left: 10, right: 30 }} />
                 <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
                 <Legend />
