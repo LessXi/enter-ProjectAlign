@@ -32,20 +32,23 @@ export default function Dashboard() {
     const year = now.getFullYear();
     const month = now.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const days: Record<string, { day: string; inbound: number; outbound: number }> = {};
-    for (let d = 1; d <= daysInMonth; d++) {
-      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      days[key] = { day: `${d}`, inbound: 0, outbound: 0 };
+    // Group by week: W1 = 1-7, W2 = 8-14, W3 = 15-21, W4 = 22-28, W5 = 29+
+    const weeks: { week: string; inbound: number; outbound: number }[] = [];
+    const ranges = [[1, 7], [8, 14], [15, 21], [22, 28], [29, daysInMonth]];
+    for (const [start, end] of ranges) {
+      if (start > daysInMonth) break;
+      weeks.push({ week: `${start}-${Math.min(end, daysInMonth)}日`, inbound: 0, outbound: 0 });
     }
     monthTxs.forEach((t) => {
-      const key = t.date.slice(0, 10);
-      if (days[key]) {
+      const day = parseInt(t.date.slice(8, 10), 10);
+      const idx = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : day <= 28 ? 3 : 4;
+      if (weeks[idx]) {
         const val = t.quantity * t.unitPrice;
-        if (t.type === 'inbound') days[key].inbound += val;
-        else days[key].outbound += val;
+        if (t.type === 'inbound') weeks[idx].inbound += val;
+        else weeks[idx].outbound += val;
       }
     });
-    return Object.values(days);
+    return weeks;
   }, [monthTxs]);
 
   const getItemName = (id: string) => items.find((i) => i.id === id)?.name || id;
@@ -89,7 +92,7 @@ export default function Dashboard() {
           </div>
           <ResponsiveContainer width="100%" className="flex-1 min-h-0" height="100%">
             <BarChart data={miniChartData} barGap={4}>
-              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)' }} interval="preserveStartEnd" />
+              <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
                 cursor={{ fill: 'rgba(255,255,255,0.08)' }}
