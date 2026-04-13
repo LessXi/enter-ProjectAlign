@@ -76,9 +76,15 @@ export default function Dashboard() {
             <h3 className="text-sm font-semibold text-white/60">月度进出趋势</h3>
             <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">近6月</span>
           </div>
-          <div className="flex items-end gap-2 mb-4">
-            <p className="text-3xl font-bold text-white">¥{(monthInbound + monthOutbound).toLocaleString()}</p>
-            <p className="text-xs text-white/40 pb-1">本月总流水</p>
+          <div className="flex flex-col gap-1 mb-4">
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-bold text-lavender">¥{monthInbound.toLocaleString()}</p>
+              <p className="text-xs text-white/40 pb-0.5">本月入库</p>
+            </div>
+            <div className="flex items-end gap-2">
+              <p className="text-2xl font-bold text-mint">¥{monthOutbound.toLocaleString()}</p>
+              <p className="text-xs text-white/40 pb-0.5">本月出库</p>
+            </div>
           </div>
           <ResponsiveContainer width="100%" className="flex-1 min-h-0" height="100%">
             <BarChart data={miniChartData} barGap={4}>
