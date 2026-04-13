@@ -131,8 +131,8 @@ export default function Reports() {
 
   const periodInbound = filteredTx.filter((t) => t.type === 'inbound').reduce((s, t) => s + t.quantity * t.unitPrice, 0);
   const periodOutbound = filteredTx.filter((t) => t.type === 'outbound').reduce((s, t) => s + t.quantity * t.unitPrice, 0);
-  // 净现金流 = 出库收入 - 入库成本（出库赚钱，入库花钱）
-  const netCashFlow = periodOutbound - periodInbound;
+  // 利润 = 出库收入 - 入库成本（出库赚钱，入库花钱）
+  const profit = periodOutbound - periodInbound;
   const txCount = filteredTx.length;
 
   const categoryData = useMemo(() => {
@@ -271,9 +271,10 @@ export default function Reports() {
     return result;
   }, [filteredTx, dateRange]);
 
-  const amountChartData = useDaily
+  const amountChartData = (useDaily
     ? dailyAmountData
-    : monthlyData.map((m) => ({ ...m, label: m.month }));
+    : monthlyData.map((m) => ({ ...m, label: m.month }))
+  ).map((d) => ({ ...d, profit: d.outbound - d.inbound }));
 
   const amountChartTitle = useMemo(() => {
     const granularity = useDaily ? '每日' : '月度';
@@ -349,9 +350,9 @@ export default function Reports() {
               <p className="text-[10px] text-black/40 mt-1">销售收入</p>
             </div>
             <div className="bg-[#1A1A2E] rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-xs text-white/50">净现金流</p>
-              <p className={`text-xl font-bold mt-1 ${netCashFlow >= 0 ? 'text-[#A4F5A6]' : 'text-red-400'}`}>
-                {netCashFlow >= 0 ? '+' : ''}¥{netCashFlow.toLocaleString()}
+              <p className="text-xs text-white/50">利润</p>
+              <p className={`text-xl font-bold mt-1 ${profit >= 0 ? 'text-[#A4F5A6]' : 'text-red-400'}`}>
+                {profit >= 0 ? '+' : ''}¥{profit.toLocaleString()}
               </p>
               <p className="text-[10px] text-white/40 mt-1">收入 - 支出</p>
             </div>
@@ -378,7 +379,29 @@ export default function Reports() {
             </ResponsiveContainer>
           </div>
           <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
-            <h3 className="text-sm font-semibold text-foreground mb-4">每日进出数量趋势</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-4">利润趋势（{periodLabel}）</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <AreaChart data={amountChartData}>
+                <defs>
+                  <linearGradient id="profitGradientPos" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#A4F5A6" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#A4F5A6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
+                  interval={amountChartData.length > 15 ? Math.floor(amountChartData.length / 12) : 0}
+                  padding={{ left: 10, right: 30 }} />
+                <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                  formatter={(value: number) => [`¥${value.toLocaleString()}`, '利润']}
+                  contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }}
+                />
+                <Area type="monotone" dataKey="profit" name="利润" stroke="#FFD666" strokeWidth={2} fill="url(#profitGradientPos)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={dailyData}>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }}
