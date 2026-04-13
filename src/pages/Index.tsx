@@ -2,13 +2,19 @@ import { useInventoryStore } from '@/store/inventoryStore';
 import { StatsCard } from '@/components/StatsCard';
 import { StockBadge, POBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
-import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, DollarSign, Clock } from 'lucide-react';
+import { Package, AlertTriangle, ArrowDownToLine, ArrowUpFromLine, DollarSign, Clock, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useMemo } from 'react';
+import { useProducts, useTransactions, usePurchaseOrders } from '@/hooks/useInventoryData';
 
 export default function Dashboard() {
-  const { items, transactions, purchaseOrders, currentRole } = useInventoryStore();
+  const { currentRole } = useInventoryStore();
+  const { data: items = [], isLoading: loadingItems } = useProducts();
+  const { data: transactions = [], isLoading: loadingTx } = useTransactions();
+  const { data: purchaseOrders = [], isLoading: loadingPOs } = usePurchaseOrders();
+
+  const isLoading = loadingItems || loadingTx || loadingPOs;
 
   const warningItems = items.filter((i) => getStockStatus(i.stock, i.threshold) !== 'normal');
 
@@ -19,7 +25,7 @@ export default function Dashboard() {
   const totalValue = items.reduce((s, i) => s + i.stock * i.unitPrice, 0);
   const pendingPOs = purchaseOrders.filter((po) => po.status === 'pending');
 
-  const recentTxs = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+  const recentTxs = [...transactions].slice(0, 5);
 
   const miniChartData = useMemo(() => {
     const months: Record<string, { month: string; inbound: number; outbound: number }> = {};
@@ -45,11 +51,19 @@ export default function Dashboard() {
 
   const isBoss = currentRole === 'boss';
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">工作台</h2>
 
-      <div className={`grid gap-4 ${isBoss ? 'grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
+      <div className={`grid gap-4 ${isBoss ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
         <StatsCard title="总 SKU 数" value={items.length} icon={Package} iconClassName="bg-primary/10 text-primary" />
         <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} iconClassName="bg-warning-bg text-warning" />
         {isBoss && (

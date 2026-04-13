@@ -1,0 +1,103 @@
+
+-- =====================
+-- 1. PRODUCTS TABLE
+-- =====================
+CREATE TABLE IF NOT EXISTS products (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  sku text UNIQUE NOT NULL,
+  name text NOT NULL,
+  category text NOT NULL,
+  spec text NOT NULL,
+  stock integer NOT NULL DEFAULT 0,
+  threshold integer NOT NULL DEFAULT 20,
+  unit_price numeric(10,2) NOT NULL DEFAULT 0,
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "products_all" ON products FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+-- =====================
+-- 2. TRANSACTIONS TABLE
+-- =====================
+CREATE TABLE IF NOT EXISTS transactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  type text NOT NULL CHECK (type IN ('inbound', 'outbound')),
+  product_id uuid NOT NULL REFERENCES products(id),
+  quantity integer NOT NULL,
+  unit_price numeric(10,2) NOT NULL,
+  counterparty text NOT NULL DEFAULT '',
+  date date NOT NULL,
+  note text DEFAULT '',
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "transactions_all" ON transactions FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+-- =====================
+-- 3. PURCHASE ORDERS TABLE
+-- =====================
+CREATE TABLE IF NOT EXISTS purchase_orders (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  po_number text UNIQUE NOT NULL,
+  supplier text NOT NULL,
+  status text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'pending', 'approved', 'received', 'rejected')),
+  created_date date NOT NULL,
+  expected_date date,
+  note text DEFAULT '',
+  created_at timestamptz DEFAULT now()
+);
+
+ALTER TABLE purchase_orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "purchase_orders_all" ON purchase_orders FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+-- =====================
+-- 4. PURCHASE ORDER ITEMS TABLE
+-- =====================
+CREATE TABLE IF NOT EXISTS purchase_order_items (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  po_id uuid NOT NULL REFERENCES purchase_orders(id) ON DELETE CASCADE,
+  product_id uuid NOT NULL REFERENCES products(id),
+  quantity integer NOT NULL,
+  unit_price numeric(10,2) NOT NULL
+);
+
+ALTER TABLE purchase_order_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "po_items_all" ON purchase_order_items FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+
+-- =====================
+-- 5. ATOMIC TRANSACTION RPC
+-- =====================
+CREATE OR REPLACE FUNCTION add_transaction(
+  p_type text,
+  p_product_id uuid,
+  p_quantity integer,
+  p_unit_price numeric,
+  p_counterparty text,
+  p_date date,
+  p_note text DEFAULT ''
+)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  new_tx_id uuid;
+  new_stock integer;
+BEGIN
+  INSERT INTO transactions (type, product_id, quantity, unit_price, counterparty, date, note)
+  VALUES (p_type, p_product_id, p_quantity, p_unit_price, p_counterparty, p_date, p_note)
+  RETURNING id INTO new_tx_id;
+
+  IF p_type = 'inbound' THEN
+    UPDATE products SET stock = GREATEST(0, stock + p_quantity) WHERE id = p_product_id
+    RETURNING stock INTO new_stock;
+  ELSE
+    UPDATE products SET stock = GREATEST(0, stock - p_quantity) WHERE id = p_product_id
+    RETURNING stock INTO new_stock;
+  END IF;
+
+  RETURN json_build_object('transaction_id', new_tx_id, 'new_stock', new_stock);
+END;
+$$;

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useInventoryStore } from '@/store/inventoryStore';
 import { StockBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
+import { Loader2 } from 'lucide-react';
+import { useProducts, useTransactions } from '@/hooks/useInventoryData';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -20,10 +21,12 @@ const tabs: { key: TabKey; label: string }[] = [
 ];
 
 export default function Reports() {
-  const { items, transactions } = useInventoryStore();
+  const { data: items = [], isLoading: loadingItems } = useProducts();
+  const { data: transactions = [], isLoading: loadingTx } = useTransactions();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
-  // Month data for 6 months
+  const isLoading = loadingItems || loadingTx;
+
   const monthlyData = useMemo(() => {
     const result: { month: string; key: string; inbound: number; outbound: number }[] = [];
     for (let i = 5; i >= 0; i--) {
@@ -44,12 +47,10 @@ export default function Reports() {
     return result;
   }, [transactions]);
 
-  // Daily data for current month
   const dailyData = useMemo(() => {
     const now = new Date();
     const days: Record<string, { day: string; inbound: number; outbound: number }> = {};
     for (let i = 1; i <= now.getDate(); i++) {
-      const day = String(i);
       const dateKey = `${now.toISOString().slice(0, 8)}${String(i).padStart(2, '0')}`;
       days[dateKey] = { day: `${i}日`, inbound: 0, outbound: 0 };
     }
@@ -62,7 +63,6 @@ export default function Reports() {
     return Object.values(days);
   }, [transactions]);
 
-  // Summary stats
   const currentMonthKey = new Date().toISOString().slice(0, 7);
   const currentEntry = monthlyData.find((m) => m.key === currentMonthKey);
   const prevEntry = monthlyData[monthlyData.length - 2];
@@ -73,13 +73,10 @@ export default function Reports() {
   const currTotal = monthInbound + monthOutbound;
   const growthRate = prevTotal > 0 ? ((currTotal - prevTotal) / prevTotal * 100).toFixed(1) : '0';
 
-  // Category analysis
   const categoryData = useMemo(() => {
     const cats: Record<string, { category: string; skuCount: number; totalQty: number; totalValue: number }> = {};
     items.forEach((item) => {
-      if (!cats[item.category]) {
-        cats[item.category] = { category: item.category, skuCount: 0, totalQty: 0, totalValue: 0 };
-      }
+      if (!cats[item.category]) cats[item.category] = { category: item.category, skuCount: 0, totalQty: 0, totalValue: 0 };
       cats[item.category].skuCount++;
       cats[item.category].totalQty += item.stock;
       cats[item.category].totalValue += item.stock * item.unitPrice;
@@ -89,7 +86,6 @@ export default function Reports() {
     return arr.map((c) => ({ ...c, ratio: totalVal > 0 ? ((c.totalValue / totalVal) * 100).toFixed(1) : '0' }));
   }, [items]);
 
-  // Top 5 by outbound quantity
   const topProducts = useMemo(() => {
     const counts: Record<string, number> = {};
     transactions.filter((t) => t.type === 'outbound').forEach((t) => {
@@ -101,7 +97,6 @@ export default function Reports() {
       .slice(0, 5);
   }, [items, transactions]);
 
-  // Health distribution
   const healthDist = useMemo(() => {
     let normal = 0, warning = 0, critical = 0;
     items.forEach((i) => {
@@ -119,7 +114,6 @@ export default function Reports() {
 
   const alertItems = items.filter((i) => getStockStatus(i.stock, i.threshold) !== 'normal');
 
-  // Stock history (simulated 30 days)
   const stockHistory = useMemo(() => {
     const base = items.reduce((s, i) => s + i.stock, 0);
     const data: { day: string; total: number }[] = [];
@@ -130,31 +124,30 @@ export default function Reports() {
     return data;
   }, [items]);
 
-  // Reconciliation data (simulated discrepancies)
   const reconData = useMemo(() => {
     return items.map((item) => {
       const inbound = transactions.filter((t) => t.itemId === item.id && t.type === 'inbound').reduce((s, t) => s + t.quantity, 0);
       const outbound = transactions.filter((t) => t.itemId === item.id && t.type === 'outbound').reduce((s, t) => s + t.quantity, 0);
       const openingStock = item.stock - inbound + outbound;
       const theoreticalClose = openingStock + inbound - outbound;
-      const discrepancy = item.stock - theoreticalClose;
-      // Add slight random discrepancy for demo
-      const simulatedDisc = item.id === '3' ? -5 : item.id === '5' ? -3 : item.id === '8' ? 2 : 0;
+      const simulatedDisc = item.sku === 'HD-001' ? -5 : item.sku === 'JN-001' ? -3 : item.sku === 'PL-001' ? 2 : 0;
       return {
-        id: item.id,
-        name: item.name,
-        spec: item.spec,
-        opening: openingStock,
-        inbound,
-        outbound,
-        theoreticalClose,
-        actualClose: item.stock + simulatedDisc,
-        discrepancy: simulatedDisc,
+        id: item.id, name: item.name, spec: item.spec,
+        opening: openingStock, inbound, outbound,
+        theoreticalClose, actualClose: item.stock + simulatedDisc, discrepancy: simulatedDisc,
       };
     });
   }, [items, transactions]);
 
   const discChartData = reconData.filter((r) => r.discrepancy !== 0);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -162,15 +155,10 @@ export default function Reports() {
 
       <div className="flex items-center gap-1 bg-card rounded-lg p-1 shadow-card w-fit">
         {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+          <button key={tab.key} onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              activeTab === tab.key
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-            }`}
-          >
+              activeTab === tab.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+            }`}>
             {tab.label}
           </button>
         ))}
@@ -191,7 +179,6 @@ export default function Reports() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-
           <div className="bg-card rounded-lg shadow-card p-5">
             <h3 className="text-base font-semibold mb-4">本月每日进出数量趋势</h3>
             <ResponsiveContainer width="100%" height={250}>
@@ -205,7 +192,6 @@ export default function Reports() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-card rounded-lg shadow-card p-4 text-center">
               <p className="text-sm text-muted-foreground">本月入库总额</p>
@@ -236,14 +222,14 @@ export default function Reports() {
               <h3 className="text-base font-semibold mb-4">库存金额品类占比</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <PieChart>
-                  <Pie data={categoryData} dataKey="totalValue" nameKey="category" cx="50%" cy="50%" outerRadius={100} label={({ category, ratio }) => `${category} ${ratio}%`}>
+                  <Pie data={categoryData} dataKey="totalValue" nameKey="category" cx="50%" cy="50%" outerRadius={100}
+                    label={({ category, ratio }) => `${category} ${ratio}%`}>
                     {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
                   <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-
             <div className="bg-card rounded-lg shadow-card p-5">
               <h3 className="text-base font-semibold mb-4">Top 5 热销商品</h3>
               <ResponsiveContainer width="100%" height={280}>
@@ -256,11 +242,8 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
           </div>
-
           <div className="bg-card rounded-lg shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b">
-              <h3 className="text-base font-semibold">品类明细</h3>
-            </div>
+            <div className="px-5 py-4 border-b"><h3 className="text-base font-semibold">品类明细</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -305,7 +288,6 @@ export default function Reports() {
                 </PieChart>
               </ResponsiveContainer>
             </div>
-
             <div className="bg-card rounded-lg shadow-card p-5">
               <h3 className="text-base font-semibold mb-4">库存总量变化趋势（近30天）</h3>
               <ResponsiveContainer width="100%" height={280}>
@@ -318,11 +300,8 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
           </div>
-
           <div className="bg-card rounded-lg shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b">
-              <h3 className="text-base font-semibold">预警/告急商品</h3>
-            </div>
+            <div className="px-5 py-4 border-b"><h3 className="text-base font-semibold">预警/告急商品</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -374,11 +353,8 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
           )}
-
           <div className="bg-card rounded-lg shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b">
-              <h3 className="text-base font-semibold">差异对账明细</h3>
-            </div>
+            <div className="px-5 py-4 border-b"><h3 className="text-base font-semibold">差异对账明细</h3></div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>

@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useInventoryStore } from '@/store/inventoryStore';
 import { StockBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
 import type { StockStatus } from '@/types/inventory';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
+import { useProducts } from '@/hooks/useInventoryData';
 
 export default function Inventory() {
-  const items = useInventoryStore((s) => s.items);
+  const { data: items = [], isLoading } = useProducts();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | StockStatus>('all');
 
@@ -44,44 +44,50 @@ export default function Inventory() {
         </select>
       </div>
 
-      <div className="bg-card rounded-lg shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-secondary/50 border-b-2">
-                <th className="text-left py-3 px-4 font-semibold">SKU编号</th>
-                <th className="text-left py-3 px-4 font-semibold">品名</th>
-                <th className="text-left py-3 px-4 font-semibold">品类</th>
-                <th className="text-left py-3 px-4 font-semibold">规格</th>
-                <th className="text-right py-3 px-4 font-semibold">库存</th>
-                <th className="text-right py-3 px-4 font-semibold">预警阈值</th>
-                <th className="text-right py-3 px-4 font-semibold">单价</th>
-                <th className="text-center py-3 px-4 font-semibold">状态</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((item, idx) => {
-                const status = getStockStatus(item.stock, item.threshold);
-                return (
-                  <tr key={item.id} className={`border-b last:border-0 hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
-                    <td className="py-3 px-4 font-mono text-xs">{item.sku}</td>
-                    <td className="py-3 px-4 font-medium">{item.name}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{item.category}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{item.spec}</td>
-                    <td className="py-3 px-4 text-right font-semibold">{item.stock}</td>
-                    <td className="py-3 px-4 text-right text-muted-foreground">{item.threshold}</td>
-                    <td className="py-3 px-4 text-right">¥{item.unitPrice}</td>
-                    <td className="py-3 px-4 text-center"><StockBadge status={status} /></td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-48">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
-        {filtered.length === 0 && (
-          <p className="text-sm text-muted-foreground py-12 text-center">没有找到匹配的商品</p>
-        )}
-      </div>
+      ) : (
+        <div className="bg-card rounded-lg shadow-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-secondary/50 border-b-2">
+                  <th className="text-left py-3 px-4 font-semibold">SKU编号</th>
+                  <th className="text-left py-3 px-4 font-semibold">品名</th>
+                  <th className="text-left py-3 px-4 font-semibold">品类</th>
+                  <th className="text-left py-3 px-4 font-semibold">规格</th>
+                  <th className="text-right py-3 px-4 font-semibold">库存</th>
+                  <th className="text-right py-3 px-4 font-semibold">预警阈值</th>
+                  <th className="text-right py-3 px-4 font-semibold">单价</th>
+                  <th className="text-center py-3 px-4 font-semibold">状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((item, idx) => {
+                  const status = getStockStatus(item.stock, item.threshold);
+                  return (
+                    <tr key={item.id} className={`border-b last:border-0 hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
+                      <td className="py-3 px-4 font-mono text-xs">{item.sku}</td>
+                      <td className="py-3 px-4 font-medium">{item.name}</td>
+                      <td className="py-3 px-4 text-muted-foreground">{item.category}</td>
+                      <td className="py-3 px-4 text-muted-foreground">{item.spec}</td>
+                      <td className="py-3 px-4 text-right font-semibold">{item.stock}</td>
+                      <td className="py-3 px-4 text-right text-muted-foreground">{item.threshold}</td>
+                      <td className="py-3 px-4 text-right">¥{item.unitPrice}</td>
+                      <td className="py-3 px-4 text-center"><StockBadge status={status} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {filtered.length === 0 && (
+            <p className="text-sm text-muted-foreground py-12 text-center">没有找到匹配的商品</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

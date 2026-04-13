@@ -3109,13 +3109,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      products: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          name: string
+          sku: string
+          spec: string
+          stock: number
+          threshold: number
+          unit_price: number
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          name: string
+          sku: string
+          spec: string
+          stock?: number
+          threshold?: number
+          unit_price?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          sku?: string
+          spec?: string
+          stock?: number
+          threshold?: number
+          unit_price?: number
+        }
+        Relationships: []
+      }
+      purchase_order_items: {
+        Row: {
+          id: string
+          po_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          id?: string
+          po_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+        }
+        Update: {
+          id?: string
+          po_id?: string
+          product_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_po_id_fkey"
+            columns: ["po_id"]
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_orders: {
+        Row: {
+          created_at: string | null
+          created_date: string
+          expected_date: string | null
+          id: string
+          note: string | null
+          po_number: string
+          status: string
+          supplier: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_date: string
+          expected_date?: string | null
+          id?: string
+          note?: string | null
+          po_number: string
+          status?: string
+          supplier: string
+        }
+        Update: {
+          created_at?: string | null
+          created_date?: string
+          expected_date?: string | null
+          id?: string
+          note?: string | null
+          po_number?: string
+          status?: string
+          supplier?: string
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          counterparty: string
+          created_at: string | null
+          date: string
+          id: string
+          note: string | null
+          product_id: string
+          quantity: number
+          type: string
+          unit_price: number
+        }
+        Insert: {
+          counterparty?: string
+          created_at?: string | null
+          date: string
+          id?: string
+          note?: string | null
+          product_id: string
+          quantity: number
+          type: string
+          unit_price: number
+        }
+        Update: {
+          counterparty?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          note?: string | null
+          product_id?: string
+          quantity?: number
+          type?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_product_id_fkey"
+            columns: ["product_id"]
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_transaction: {
+        Args: {
+          p_counterparty: string
+          p_date: string
+          p_note?: string
+          p_product_id: string
+          p_quantity: number
+          p_type: string
+          p_unit_price: number
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
