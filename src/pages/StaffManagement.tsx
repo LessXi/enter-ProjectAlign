@@ -39,7 +39,7 @@ export default function StaffManagement() {
 
   // Password visibility
   const [showPassword, setShowPassword] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Created credentials display
   const [createdCreds, setCreatedCreds] = useState<{ name: string; email: string; password: string; role: string } | null>(null);
@@ -191,7 +191,7 @@ export default function StaffManagement() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string, userId: string) => {
     try {
       const ta = document.createElement('textarea');
       ta.value = text;
@@ -202,8 +202,8 @@ export default function StaffManagement() {
       document.execCommand('copy');
       document.body.removeChild(ta);
     } catch { /* ignore */ }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopiedId(userId);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   if (role !== 'boss') {
@@ -279,11 +279,11 @@ export default function StaffManagement() {
                               {visiblePwdIds.has(u.id) ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                             </button>
                             <button
-                              onClick={() => copyToClipboard(`姓名: ${u.displayName}\n邮箱: ${u.email}\n密码: ${u.passwordPlain}\n角色: ${roleMeta[u.role]?.label || u.role}`)}
+                              onClick={() => copyToClipboard(`姓名: ${u.displayName}\n邮箱: ${u.email}\n密码: ${u.passwordPlain}\n角色: ${roleMeta[u.role]?.label || u.role}`, u.id)}
                               className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                               title="复制账号信息"
                             >
-                              {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedId === u.id ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         ) : (
