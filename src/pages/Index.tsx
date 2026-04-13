@@ -85,6 +85,7 @@ export default function Dashboard() {
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
+                cursor={false}
                 formatter={(value: number) => `¥${value.toLocaleString()}`}
                 contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '12px', color: '#1A1A1A', fontSize: '12px' }}
               />
