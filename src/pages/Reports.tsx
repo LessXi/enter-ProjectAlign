@@ -379,7 +379,7 @@ export default function Reports() {
               <p className="text-[10px] text-black/40 mt-1">销售收入</p>
             </div>
             <div className="bg-[#1A1A2E] rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-xs text-white/50">利润</p>
+              <p className="text-xs text-amber-300">利润</p>
               <p className={`text-xl font-bold mt-1 ${profit >= 0 ? 'text-[#A4F5A6]' : 'text-red-400'}`}>
                 {profit >= 0 ? '+' : ''}¥{profit.toLocaleString()}
               </p>
