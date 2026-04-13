@@ -77,7 +77,7 @@ export default function Dashboard() {
         {/* Chart card - spans 2 cols on sm+, row-span dynamically based on role on lg */}
         <div className={`sm:col-span-2 ${isBoss ? 'lg:row-span-3' : 'lg:row-span-2'} bg-[#1A1A2E] rounded-3xl p-5 sm:p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col min-h-[280px] sm:min-h-0`}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-white/60">本月每日进出</h3>
+            <h3 className="text-sm font-semibold text-white/60">本月进出趋势</h3>
             <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">{new Date().getMonth() + 1}月</span>
           </div>
           <div className="flex flex-col gap-1 mb-4">
