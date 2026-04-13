@@ -246,7 +246,7 @@ export default function StaffManagement() {
                 className="p-1 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
                 title={showCredsPwd ? '隐藏密码' : '显示密码'}
               >
-                {showCredsPwd ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {showCredsPwd ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
               <button
                 onClick={() => copyToClipboard(`姓名: ${createdCreds.name}\n邮箱: ${createdCreds.email}\n密码: ${createdCreds.password}\n角色: ${createdCreds.role}`)}
@@ -300,7 +300,7 @@ export default function StaffManagement() {
                               })}
                               className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                             >
-                              {visiblePwdIds.has(u.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                              {visiblePwdIds.has(u.id) ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         ) : (
@@ -401,7 +401,7 @@ export default function StaffManagement() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
