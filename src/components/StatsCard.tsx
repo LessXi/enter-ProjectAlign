@@ -1,7 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type CardVariant = 'default' | 'mint' | 'lavender' | 'dark';
+type CardVariant = 'default' | 'mint' | 'lavender' | 'dark' | 'warning';
 
 interface StatsCardProps {
   title: string;
@@ -40,6 +40,13 @@ const variantStyles: Record<CardVariant, { card: string; icon: string; title: st
     title: 'text-white/50',
     value: 'text-white',
     subtitle: 'text-white/40',
+  },
+  warning: {
+    card: 'bg-warning/15 border border-warning/20',
+    icon: 'bg-warning/20 text-warning',
+    title: 'text-foreground/60',
+    value: 'text-foreground',
+    subtitle: 'text-warning',
   },
 };
 

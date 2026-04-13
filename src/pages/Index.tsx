@@ -67,8 +67,8 @@ export default function Dashboard() {
       {/* === BENTO GRID === */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
         {/* Row 1: Stats cards (small) + chart (tall, spans 2 rows) */}
-        <StatsCard title="总 SKU 数" value={items.length} icon={Package} variant="mint" />
-        <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} variant="lavender" subtitle={warningItems.length > 0 ? '需要关注' : '状态良好'} />
+        <StatsCard title="总 SKU 数" value={items.length} icon={Package} />
+        <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} variant="warning" subtitle={warningItems.length > 0 ? '需要关注' : '状态良好'} />
 
         {/* Chart card - spans 2 cols on lg, 2 rows */}
         <div className="col-span-2 row-span-2 bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated">
@@ -95,13 +95,13 @@ export default function Dashboard() {
         </div>
 
         {/* Row 2: More stats */}
-        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} subtitle="采购支出" />
-        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} variant="dark" subtitle="销售收入" />
+        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} variant="lavender" subtitle="采购支出" />
+        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} variant="mint" subtitle="销售收入" />
 
         {isBoss && (
           <>
-            <StatsCard title="库存总值" value={`¥${totalValue.toLocaleString()}`} icon={DollarSign} variant="mint" />
-            <StatsCard title="待审批采购单" value={pendingPOs.length} icon={Clock} variant="lavender" subtitle={pendingPOs.length > 0 ? '需要处理' : '无待办'} />
+            <StatsCard title="库存总值" value={`¥${totalValue.toLocaleString()}`} icon={DollarSign} />
+            <StatsCard title="待审批采购单" value={pendingPOs.length} icon={Clock} variant="dark" subtitle={pendingPOs.length > 0 ? '需要处理' : '无待办'} />
           </>
         )}
       </div>

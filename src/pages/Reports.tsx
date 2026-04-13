@@ -338,15 +338,15 @@ export default function Reports() {
         <div className="space-y-4">
           {/* KPI cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-mint rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-xs text-black/50">{periodLabel} 入库总额</p>
-              <p className="text-xl font-bold text-black mt-1">¥{periodInbound.toLocaleString()}</p>
-              <p className="text-[10px] text-black/40 mt-1">采购支出</p>
-            </div>
             <div className="bg-lavender rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
-              <p className="text-xs text-white/60">{periodLabel} 出库总额</p>
-              <p className="text-xl font-bold text-white mt-1">¥{periodOutbound.toLocaleString()}</p>
-              <p className="text-[10px] text-white/50 mt-1">销售收入</p>
+              <p className="text-xs text-white/60">{periodLabel} 入库总额</p>
+              <p className="text-xl font-bold text-white mt-1">¥{periodInbound.toLocaleString()}</p>
+              <p className="text-[10px] text-white/50 mt-1">采购支出</p>
+            </div>
+            <div className="bg-mint rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
+              <p className="text-xs text-black/50">{periodLabel} 出库总额</p>
+              <p className="text-xl font-bold text-black mt-1">¥{periodOutbound.toLocaleString()}</p>
+              <p className="text-[10px] text-black/40 mt-1">销售收入</p>
             </div>
             <div className="bg-[#1A1A2E] rounded-3xl p-5 text-center shadow-card transition-all duration-300 hover:shadow-elevated hover:-translate-y-0.5">
               <p className="text-xs text-white/50">净现金流</p>
