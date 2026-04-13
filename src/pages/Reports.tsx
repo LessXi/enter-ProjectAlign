@@ -313,7 +313,8 @@ export default function Reports() {
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={dailyData}>
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11 }}
-                  interval={Math.max(0, Math.floor(dailyData.length / 15) - 1)} />
+                  interval={Math.max(0, Math.floor(dailyData.length / 15) - 1)}
+                  padding={{ left: 10, right: 30 }} />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Legend />

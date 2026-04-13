@@ -5,6 +5,7 @@ import Inbound from "./pages/Inbound";
 import Outbound from "./pages/Outbound";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import Reports from "./pages/Reports";
+import StaffManagement from "./pages/StaffManagement";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -25,6 +26,7 @@ export const routers = [
       { path: "/outbound", name: "outbound", element: <Outbound /> },
       { path: "/purchase-orders", name: "purchase-orders", element: <PurchaseOrders /> },
       { path: "/reports", name: "reports", element: <Reports /> },
+      { path: "/staff", name: "staff", element: <StaffManagement /> },
     ],
   },
   /* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */

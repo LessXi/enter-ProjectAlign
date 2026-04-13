@@ -7,6 +7,7 @@ import {
   ClipboardList,
   BarChart3,
   Warehouse,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,6 +20,7 @@ const allMenuItems = [
   { path: '/outbound', label: '出库管理', icon: ArrowUpFromLine, roles: ['warehouse', 'purchasing'] as Role[] },
   { path: '/purchase-orders', label: '采购单', icon: ClipboardList, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
   { path: '/reports', label: '对账报表', icon: BarChart3, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
+  { path: '/staff', label: '员工管理', icon: Users, roles: ['boss'] as Role[] },
 ];
 
 export function AppSidebar() {
