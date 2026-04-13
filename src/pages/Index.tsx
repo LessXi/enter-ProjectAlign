@@ -85,7 +85,7 @@ export default function Dashboard() {
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
-                cursor={false}
+                cursor={{ fill: 'rgba(0,0,0,0.04)' }}
                 formatter={(value: number) => `¥${value.toLocaleString()}`}
                 contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '12px', color: '#1A1A1A', fontSize: '12px' }}
               />
@@ -160,22 +160,33 @@ export default function Dashboard() {
           <h3 className="text-sm font-semibold text-foreground mb-4">最近流水</h3>
           <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
             {recentTxs.map((tx) => (
-              <div key={tx.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${tx.type === 'inbound' ? 'bg-mint/30' : 'bg-lavender/30'}`}>
+              <div key={tx.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${tx.type === 'inbound' ? 'bg-mint/30' : 'bg-lavender/30'}`}>
                     {tx.type === 'inbound'
                       ? <ArrowDownToLine className="w-3.5 h-3.5 text-foreground/70" />
                       : <ArrowUpFromLine className="w-3.5 h-3.5 text-foreground/70" />
                     }
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-card-foreground leading-tight">{getItemName(tx.itemId)}</p>
-                    <p className="text-[10px] text-muted-foreground">{tx.date}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-card-foreground leading-tight truncate">{getItemName(tx.itemId)}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] text-muted-foreground">{tx.date}</span>
+                      {tx.counterparty && (
+                        <>
+                          <span className="text-[10px] text-muted-foreground/40">|</span>
+                          <span className="text-[10px] text-muted-foreground truncate">{tx.counterparty}</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <span className={`text-xs font-semibold ${tx.type === 'inbound' ? 'text-success' : 'text-destructive'}`}>
-                  {tx.type === 'inbound' ? '+' : '-'}{tx.quantity}
-                </span>
+                <div className="flex flex-col items-end flex-shrink-0 ml-3">
+                  <span className={`text-xs font-semibold ${tx.type === 'inbound' ? 'text-success' : 'text-destructive'}`}>
+                    {tx.type === 'inbound' ? '+' : '-'}{tx.quantity}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">¥{(tx.quantity * tx.unitPrice).toLocaleString()}</span>
+                </div>
               </div>
             ))}
             {recentTxs.length === 0 && (

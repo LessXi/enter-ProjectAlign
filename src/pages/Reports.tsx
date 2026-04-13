@@ -370,7 +370,7 @@ export default function Reports() {
                   interval={amountChartData.length > 15 ? Math.floor(amountChartData.length / 12) : 0}
                   padding={{ left: 10, right: 30 }} />
                 <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                <Tooltip cursor={false} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                 <Legend />
                 <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(38,92%,55%)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
@@ -385,7 +385,7 @@ export default function Reports() {
                   interval={Math.max(0, Math.floor(dailyData.length / 15) - 1)}
                   padding={{ left: 10, right: 30 }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                <Tooltip cursor={false} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                 <Legend />
                 <Line type="monotone" dataKey="inbound" name="入库量" stroke="hsl(38,92%,55%)" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="outbound" name="出库量" stroke="hsl(125,85%,81%)" strokeWidth={2} dot={false} />
@@ -406,7 +406,7 @@ export default function Reports() {
                     label={({ category, ratio }) => `${category} ${ratio}%`}>
                     {categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                   </Pie>
-                  <Tooltip cursor={false} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -417,7 +417,7 @@ export default function Reports() {
                   <BarChart data={topProducts} layout="vertical">
                     <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
                     <YAxis type="category" dataKey="name" width={80} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(0,0%,70%)' }} />
-                    <Tooltip cursor={false} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                    <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                     <Bar dataKey="quantity" name="出库量" fill="hsl(125,85%,81%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -467,7 +467,7 @@ export default function Reports() {
                     label={({ name, value }) => `${name}: ${value}`}>
                     {healthDist.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
                   </Pie>
-                  <Tooltip cursor={false} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -478,7 +478,7 @@ export default function Reports() {
                 <AreaChart data={stockHistory}>
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                  <Tooltip cursor={false} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                   <Area type="monotone" dataKey="total" name="库存总量" stroke="hsl(125,85%,81%)" fill="hsl(125,85%,81%)" fillOpacity={0.15} strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -526,7 +526,7 @@ export default function Reports() {
                 <BarChart data={discChartData}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
-                  <Tooltip cursor={false} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                  <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                   <ReferenceLine y={0} stroke="hsl(0,0%,30%)" />
                   <Bar dataKey="discrepancy" name="差异">
                     {discChartData.map((entry, i) => (
