@@ -2,14 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { Role } from '@/types/inventory';
-import { Warehouse, Loader2, User, ShoppingCart, Crown } from 'lucide-react';
+import { Warehouse, Loader2, User, ShoppingCart } from 'lucide-react';
 
 type Tab = 'login' | 'register';
 
 const roleOptions: { value: Role; label: string; desc: string; icon: typeof User }[] = [
   { value: 'warehouse', label: '仓管', desc: '录入出入库，查看库存', icon: User },
   { value: 'purchasing', label: '采购', desc: '创建采购单，管理供应商', icon: ShoppingCart },
-  { value: 'boss', label: '老板', desc: '全局数据，审批采购单', icon: Crown },
 ];
 
 export default function Login() {
@@ -124,7 +123,7 @@ export default function Login() {
             {tab === 'register' && (
               <div>
                 <label className="block text-sm font-medium mb-2">选择角色 *</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {roleOptions.map(({ value, label, desc, icon: Icon }) => (
                     <button
                       key={value}
@@ -141,6 +140,7 @@ export default function Login() {
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground mt-1.5">老板账号由管理员创建，如需开通请联系管理员</p>
               </div>
             )}
 
