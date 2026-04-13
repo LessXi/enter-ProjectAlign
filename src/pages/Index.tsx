@@ -25,7 +25,7 @@ export default function Dashboard() {
   const totalValue = items.reduce((s, i) => s + i.stock * i.unitPrice, 0);
   const pendingPOs = purchaseOrders.filter((po) => po.status === 'pending');
 
-  const recentTxs = [...transactions].slice(0, 6);
+  const recentTxs = [...transactions].slice(0, 20);
 
   const miniChartData = useMemo(() => {
     const months: Record<string, { month: string; inbound: number; outbound: number }> = {};
@@ -157,7 +157,7 @@ export default function Dashboard() {
         {/* Recent transactions - narrower */}
         <div className="lg:col-span-2 bg-card rounded-3xl shadow-card p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
           <h3 className="text-sm font-semibold text-foreground mb-4">最近流水</h3>
-          <div className="space-y-2.5">
+          <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
             {recentTxs.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-2.5">

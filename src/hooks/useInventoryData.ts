@@ -163,6 +163,47 @@ export function useCreatePO() {
   });
 }
 
+export function useReceivePO() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ poNumber }: { poNumber: string }) => {
+      // 1. Fetch PO with items
+      const { data: po, error: poErr } = await supabase
+        .from('purchase_orders')
+        .select(`*, purchase_order_items (product_id, quantity, unit_price)`)
+        .eq('po_number', poNumber)
+        .single();
+      if (poErr) throw poErr;
+
+      // 2. For each PO item, create an inbound transaction via RPC
+      for (const item of po.purchase_order_items) {
+        const { error: txErr } = await supabase.rpc('add_transaction', {
+          p_type: 'inbound',
+          p_product_id: item.product_id,
+          p_quantity: item.quantity,
+          p_unit_price: Number(item.unit_price),
+          p_counterparty: po.supplier || '',
+          p_date: new Date().toISOString().split('T')[0],
+          p_note: `采购单收货 - ${po.po_number}`,
+        });
+        if (txErr) throw txErr;
+      }
+
+      // 3. Update PO status to received
+      const { error: statusErr } = await supabase
+        .from('purchase_orders')
+        .update({ status: 'received' })
+        .eq('po_number', poNumber);
+      if (statusErr) throw statusErr;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['purchase_orders'] });
+      qc.invalidateQueries({ queryKey: ['products'] });
+      qc.invalidateQueries({ queryKey: ['transactions'] });
+    },
+  });
+}
+
 export function useUpdatePOStatus() {
   const qc = useQueryClient();
   return useMutation({

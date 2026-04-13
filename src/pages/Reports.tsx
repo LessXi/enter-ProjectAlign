@@ -176,13 +176,52 @@ export default function Reports() {
 
   const alertItems = items.filter((i) => getStockStatus(i.stock, i.threshold) !== 'normal');
 
+  // Stock history: compute daily total stock within date range from real transactions
   const stockHistory = useMemo(() => {
-    const base = items.reduce((s, i) => s + i.stock, 0);
-    return Array.from({ length: 31 }, (_, i) => ({
-      day: `${i}`,
-      total: Math.max(0, base + (30 - i) * 3 + Math.round((Math.random() - 0.5) * base * 0.05)),
-    }));
-  }, [items]);
+    // Current total stock
+    const currentTotal = items.reduce((s, i) => s + i.stock, 0);
+    const today = toDateStr(new Date());
+
+    // Build a map of daily net stock change (inbound adds, outbound subtracts)
+    const dailyDelta: Record<string, number> = {};
+    transactions.forEach((t) => {
+      const d = t.date;
+      if (!dailyDelta[d]) dailyDelta[d] = 0;
+      dailyDelta[d] += t.type === 'inbound' ? t.quantity : -t.quantity;
+    });
+
+    // Walk backwards from today to build total stock at each date
+    const allDates: string[] = [];
+    const cursor = new Date(today);
+    const earliest = new Date(dateRange.start);
+    earliest.setDate(earliest.getDate() - 1); // one day before range start
+    while (cursor >= earliest) {
+      allDates.push(toDateStr(new Date(cursor)));
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    // Compute stock at each date (going backwards: subtract net delta of future dates)
+    const stockByDate: Record<string, number> = {};
+    let running = currentTotal;
+    for (const d of allDates) {
+      stockByDate[d] = running;
+      // Undo the delta of this date to get previous day's stock
+      running -= (dailyDelta[d] || 0);
+    }
+
+    // Build chart data only for dates within the selected range
+    const result: { day: string; total: number }[] = [];
+    const startD = new Date(dateRange.start);
+    const endD = new Date(dateRange.end);
+    for (const c = new Date(startD); c <= endD; c.setDate(c.getDate() + 1)) {
+      const key = toDateStr(new Date(c));
+      result.push({
+        day: `${c.getMonth() + 1}/${c.getDate()}`,
+        total: Math.max(0, stockByDate[key] ?? currentTotal),
+      });
+    }
+    return result;
+  }, [items, transactions, dateRange]);
 
   const reconData = useMemo(() => {
     return items.map((item) => {
@@ -434,7 +473,7 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
             <div className="bg-card rounded-3xl shadow-card p-6 border border-border/50">
-              <h3 className="text-sm font-semibold text-foreground mb-4">库存总量变化趋势（近30天）</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-4">库存总量变化趋势（{periodLabel}）</h3>
               <ResponsiveContainer width="100%" height={280}>
                 <AreaChart data={stockHistory}>
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }} />

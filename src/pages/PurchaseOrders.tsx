@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { POBadge } from '@/components/StatusBadge';
 import { Plus, Check, X, Eye, Loader2 } from 'lucide-react';
 import type { POStatus } from '@/types/inventory';
-import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus } from '@/hooks/useInventoryData';
+import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus, useReceivePO } from '@/hooks/useInventoryData';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'react-router-dom';
 
@@ -15,6 +15,7 @@ export default function PurchaseOrders() {
   const { data: purchaseOrders = [], isLoading } = usePurchaseOrders();
   const createPO = useCreatePO();
   const updatePOStatus = useUpdatePOStatus();
+  const receivePO = useReceivePO();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -69,10 +70,19 @@ export default function PurchaseOrders() {
   const handleStatusUpdate = async (poNumber: string, status: POStatus) => {
     try {
       await updatePOStatus.mutateAsync({ poNumber, status });
-      const labels: Record<string, string> = { approved: '已批准', rejected: '已驳回', pending: '已提交', received: '已收货', draft: '已退回草稿' };
+      const labels: Record<string, string> = { approved: '已批准', rejected: '已驳回', pending: '已提交', draft: '已退回草稿' };
       toast({ title: labels[status] || '状态已更新' });
     } catch {
       toast({ title: '操作失败', description: '请稍后重试', variant: 'destructive' });
+    }
+  };
+
+  const handleReceive = async (poNumber: string) => {
+    try {
+      await receivePO.mutateAsync({ poNumber });
+      toast({ title: '已收货', description: '商品已自动入库并更新库存' });
+    } catch {
+      toast({ title: '收货失败', description: '请稍后重试', variant: 'destructive' });
     }
   };
 
@@ -190,7 +200,9 @@ export default function PurchaseOrders() {
                             <button onClick={() => handleStatusUpdate(po.poNumber, 'pending')} className="px-3 py-1 text-xs bg-[#1A1A2E] text-white rounded-full font-medium hover:bg-[#2A2A3E] transition-all">提交</button>
                           )}
                           {isPurchasing && po.status === 'approved' && (
-                            <button onClick={() => handleStatusUpdate(po.poNumber, 'received')} className="px-3 py-1 text-xs bg-mint text-foreground rounded-full font-medium hover:brightness-95 transition-all">收货</button>
+                            <button onClick={() => handleReceive(po.poNumber)} disabled={receivePO.isPending} className="px-3 py-1 text-xs bg-mint text-foreground rounded-full font-medium hover:brightness-95 transition-all disabled:opacity-40">
+                              {receivePO.isPending ? '处理中...' : '收货'}
+                            </button>
                           )}
                           {isPurchasing && po.status === 'rejected' && (
                             <button onClick={() => handleStatusUpdate(po.poNumber, 'draft')} className="px-3 py-1 text-xs border border-border text-foreground rounded-full font-medium hover:bg-muted/50 transition-all">重新编辑</button>
