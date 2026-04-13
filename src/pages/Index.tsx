@@ -28,24 +28,25 @@ export default function Dashboard() {
   const recentTxs = [...transactions].slice(0, 20);
 
   const miniChartData = useMemo(() => {
-    const months: Record<string, { month: string; inbound: number; outbound: number }> = {};
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const key = d.toISOString().slice(0, 7);
-      const label = `${d.getMonth() + 1}月`;
-      months[key] = { month: label, inbound: 0, outbound: 0 };
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days: Record<string, { day: string; inbound: number; outbound: number }> = {};
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      days[key] = { day: `${d}`, inbound: 0, outbound: 0 };
     }
-    transactions.forEach((t) => {
-      const key = t.date.slice(0, 7);
-      if (months[key]) {
+    monthTxs.forEach((t) => {
+      const key = t.date.slice(0, 10);
+      if (days[key]) {
         const val = t.quantity * t.unitPrice;
-        if (t.type === 'inbound') months[key].inbound += val;
-        else months[key].outbound += val;
+        if (t.type === 'inbound') days[key].inbound += val;
+        else days[key].outbound += val;
       }
     });
-    return Object.values(months);
-  }, [transactions]);
+    return Object.values(days);
+  }, [monthTxs]);
 
   const getItemName = (id: string) => items.find((i) => i.id === id)?.name || id;
 
@@ -73,8 +74,8 @@ export default function Dashboard() {
         {/* Chart card - spans 2 cols on sm+, row-span dynamically based on role on lg */}
         <div className={`sm:col-span-2 ${isBoss ? 'lg:row-span-3' : 'lg:row-span-2'} bg-[#1A1A2E] rounded-3xl p-5 sm:p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col min-h-[280px] sm:min-h-0`}>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-white/60">月度进出趋势</h3>
-            <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">近6月</span>
+            <h3 className="text-sm font-semibold text-white/60">本月每日进出</h3>
+            <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">{new Date().getMonth() + 1}月</span>
           </div>
           <div className="flex flex-col gap-1 mb-4">
             <div className="flex items-end gap-2">
@@ -88,7 +89,7 @@ export default function Dashboard() {
           </div>
           <ResponsiveContainer width="100%" className="flex-1 min-h-0" height="100%">
             <BarChart data={miniChartData} barGap={4}>
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.35)' }} />
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.35)' }} interval="preserveStartEnd" />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.25)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip
                 cursor={{ fill: 'rgba(255,255,255,0.08)' }}
