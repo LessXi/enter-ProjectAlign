@@ -227,50 +227,6 @@ export default function StaffManagement() {
         </div>
       )}
 
-      {/* Created Credentials Card */}
-      {createdCreds && (
-        <div className="bg-card rounded-lg shadow-card p-5 border-2 border-primary/20">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-primary">新账号已创建 - 请记录登录信息</h3>
-            <button onClick={() => setCreatedCreds(null)} className="text-muted-foreground hover:text-foreground">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <span className="text-muted-foreground">姓名：</span>
-              <span className="font-medium">{createdCreds.name}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">角色：</span>
-              <span className="font-medium">{createdCreds.role}</span>
-            </div>
-            <div>
-              <span className="text-muted-foreground">邮箱：</span>
-              <span className="font-medium font-mono">{createdCreds.email}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground">密码：</span>
-              <span className="font-medium font-mono">{showCredsPwd ? createdCreds.password : '********'}</span>
-              <button
-                onClick={() => setShowCredsPwd(!showCredsPwd)}
-                className="p-1 rounded hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
-                title={showCredsPwd ? '隐藏密码' : '显示密码'}
-              >
-                {showCredsPwd ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-              </button>
-              <button
-                onClick={() => copyToClipboard(`姓名: ${createdCreds.name}\n邮箱: ${createdCreds.email}\n密码: ${createdCreds.password}\n角色: ${createdCreds.role}`)}
-                className="p-1 rounded hover:bg-secondary transition-colors"
-                title="复制全部信息"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* User table */}
       {loading ? (
         <div className="flex items-center justify-center h-64">
@@ -312,6 +268,13 @@ export default function StaffManagement() {
                               className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                             >
                               {visiblePwdIds.has(u.id) ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                            </button>
+                            <button
+                              onClick={() => copyToClipboard(`姓名: ${u.displayName}\n邮箱: ${u.email}\n密码: ${u.passwordPlain}\n角色: ${roleMeta[u.role]?.label || u.role}`)}
+                              className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                              title="复制账号信息"
+                            >
+                              {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         ) : (
