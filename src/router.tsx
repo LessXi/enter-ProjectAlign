@@ -5,9 +5,15 @@ import Inbound from "./pages/Inbound";
 import Outbound from "./pages/Outbound";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import Reports from "./pages/Reports";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 export const routers = [
+  {
+    path: "/login",
+    name: "login",
+    element: <Login />,
+  },
   {
     path: "/",
     name: "layout",

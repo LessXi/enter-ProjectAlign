@@ -1,4 +1,4 @@
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useAuth } from '@/hooks/useAuth';
 import { StatsCard } from '@/components/StatsCard';
 import { StockBadge, POBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import { useProducts, useTransactions, usePurchaseOrders } from '@/hooks/useInventoryData';
 
 export default function Dashboard() {
-  const { currentRole } = useInventoryStore();
+  const { role: currentRole } = useAuth();
   const { data: items = [], isLoading: loadingItems } = useProducts();
   const { data: transactions = [], isLoading: loadingTx } = useTransactions();
   const { data: purchaseOrders = [], isLoading: loadingPOs } = usePurchaseOrders();
@@ -74,8 +74,8 @@ export default function Dashboard() {
             iconClassName="bg-success-bg text-success"
           />
         )}
-        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} iconClassName="bg-info-bg text-info" />
-        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} iconClassName="bg-destructive-bg text-destructive" />
+        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} iconClassName="bg-warning-bg text-warning" />
+        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} iconClassName="bg-success-bg text-success" />
         {isBoss && (
           <StatsCard
             title="待审批采购单"

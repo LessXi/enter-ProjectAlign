@@ -9,24 +9,23 @@ import {
   Warehouse,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useAuth } from '@/hooks/useAuth';
+import type { Role } from '@/types/inventory';
 
 const allMenuItems = [
-  { path: '/', label: '工作台', icon: LayoutDashboard, roles: ['warehouse', 'purchasing', 'boss'] as const },
-  { path: '/inventory', label: '库存管理', icon: Package, roles: ['warehouse', 'purchasing', 'boss'] as const },
-  { path: '/inbound', label: '入库管理', icon: ArrowDownToLine, roles: ['warehouse', 'purchasing'] as const },
-  { path: '/outbound', label: '出库管理', icon: ArrowUpFromLine, roles: ['warehouse', 'purchasing'] as const },
-  { path: '/purchase-orders', label: '采购单', icon: ClipboardList, roles: ['warehouse', 'purchasing', 'boss'] as const },
-  { path: '/reports', label: '对账报表', icon: BarChart3, roles: ['warehouse', 'purchasing', 'boss'] as const },
+  { path: '/', label: '工作台', icon: LayoutDashboard, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
+  { path: '/inventory', label: '库存管理', icon: Package, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
+  { path: '/inbound', label: '入库管理', icon: ArrowDownToLine, roles: ['warehouse', 'purchasing'] as Role[] },
+  { path: '/outbound', label: '出库管理', icon: ArrowUpFromLine, roles: ['warehouse', 'purchasing'] as Role[] },
+  { path: '/purchase-orders', label: '采购单', icon: ClipboardList, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
+  { path: '/reports', label: '对账报表', icon: BarChart3, roles: ['warehouse', 'purchasing', 'boss'] as Role[] },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
-  const currentRole = useInventoryStore((s) => s.currentRole);
+  const { role } = useAuth();
 
-  const visibleItems = allMenuItems.filter((item) =>
-    (item.roles as readonly string[]).includes(currentRole)
-  );
+  const visibleItems = allMenuItems.filter((item) => item.roles.includes(role));
 
   return (
     <aside className="w-60 h-full bg-sidebar flex flex-col flex-shrink-0">
@@ -62,7 +61,7 @@ export function AppSidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/50 px-3 mb-2">v1.0 · 服装批发ERP</p>
+        <p className="text-xs text-sidebar-foreground/50 px-3">v1.0 · 服装批发ERP</p>
       </div>
     </aside>
   );

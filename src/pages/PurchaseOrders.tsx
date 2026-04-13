@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useInventoryStore } from '@/store/inventoryStore';
+import { useAuth } from '@/hooks/useAuth';
 import { POBadge } from '@/components/StatusBadge';
 import { Plus, Check, X, Eye, Loader2 } from 'lucide-react';
 import type { POStatus } from '@/types/inventory';
@@ -7,7 +7,7 @@ import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus } from '
 import { useToast } from '@/hooks/use-toast';
 
 export default function PurchaseOrders() {
-  const { currentRole } = useInventoryStore();
+  const { role: currentRole } = useAuth();
   const { data: items = [] } = useProducts();
   const { data: purchaseOrders = [], isLoading } = usePurchaseOrders();
   const createPO = useCreatePO();

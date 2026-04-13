@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { StockBadge } from '@/components/StatusBadge';
 import { getStockStatus } from '@/lib/stockStatus';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 import { useProducts, useTransactions } from '@/hooks/useInventoryData';
 import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
@@ -12,6 +12,7 @@ import {
 const COLORS = ['hsl(230,55%,30%)', 'hsl(38,92%,50%)', 'hsl(160,60%,40%)', 'hsl(0,72%,51%)', 'hsl(270,50%,55%)', 'hsl(190,60%,45%)', 'hsl(340,60%,50%)'];
 
 type TabKey = 'overview' | 'category' | 'health' | 'reconciliation';
+type PresetKey = 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom';
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'overview', label: '进出总览' },
@@ -20,22 +21,84 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: 'reconciliation', label: '差异对账' },
 ];
 
+const presets: { key: PresetKey; label: string }[] = [
+  { key: 'today', label: '今日' },
+  { key: 'week', label: '本周' },
+  { key: 'month', label: '本月' },
+  { key: 'quarter', label: '本季度' },
+  { key: 'year', label: '本年' },
+  { key: 'custom', label: '自定义' },
+];
+
+function toDateStr(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
+
+function getPresetRange(preset: PresetKey): { start: string; end: string } {
+  const now = new Date();
+  const today = toDateStr(now);
+
+  switch (preset) {
+    case 'today':
+      return { start: today, end: today };
+    case 'week': {
+      const d = new Date(now);
+      const day = d.getDay() || 7; // Monday = 1
+      d.setDate(d.getDate() - day + 1);
+      return { start: toDateStr(d), end: today };
+    }
+    case 'month':
+      return { start: `${today.slice(0, 7)}-01`, end: today };
+    case 'quarter': {
+      const month = now.getMonth();
+      const quarterStart = new Date(now.getFullYear(), Math.floor(month / 3) * 3, 1);
+      return { start: toDateStr(quarterStart), end: today };
+    }
+    case 'year':
+      return { start: `${now.getFullYear()}-01-01`, end: today };
+    default:
+      return { start: `${today.slice(0, 7)}-01`, end: today };
+  }
+}
+
 export default function Reports() {
   const { data: items = [], isLoading: loadingItems } = useProducts();
   const { data: transactions = [], isLoading: loadingTx } = useTransactions();
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
+  // Date range state — default: 本月
+  const [preset, setPreset] = useState<PresetKey>('month');
+  const defaultRange = getPresetRange('month');
+  const [customStart, setCustomStart] = useState(defaultRange.start);
+  const [customEnd, setCustomEnd] = useState(defaultRange.end);
+
+  const dateRange = useMemo(() =>
+    preset === 'custom'
+      ? { start: customStart, end: customEnd }
+      : getPresetRange(preset),
+    [preset, customStart, customEnd]
+  );
+
   const isLoading = loadingItems || loadingTx;
 
+  // Filter transactions by date range
+  const filteredTx = useMemo(() =>
+    transactions.filter((t) => t.date >= dateRange.start && t.date <= dateRange.end),
+    [transactions, dateRange]
+  );
+
+  // Build month buckets for the selected range
   const monthlyData = useMemo(() => {
     const result: { month: string; key: string; inbound: number; outbound: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(d.getMonth() - i);
-      const key = d.toISOString().slice(0, 7);
-      result.push({ month: `${d.getMonth() + 1}月`, key, inbound: 0, outbound: 0 });
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end) {
+      const key = toDateStr(cursor).slice(0, 7);
+      result.push({ month: `${cursor.getMonth() + 1}月`, key, inbound: 0, outbound: 0 });
+      cursor.setMonth(cursor.getMonth() + 1);
     }
-    transactions.forEach((t) => {
+    filteredTx.forEach((t) => {
       const k = t.date.slice(0, 7);
       const entry = result.find((r) => r.key === k);
       if (entry) {
@@ -45,33 +108,32 @@ export default function Reports() {
       }
     });
     return result;
-  }, [transactions]);
+  }, [filteredTx, dateRange]);
 
+  // Build daily buckets for the selected range
   const dailyData = useMemo(() => {
-    const now = new Date();
-    const days: Record<string, { day: string; inbound: number; outbound: number }> = {};
-    for (let i = 1; i <= now.getDate(); i++) {
-      const dateKey = `${now.toISOString().slice(0, 8)}${String(i).padStart(2, '0')}`;
-      days[dateKey] = { day: `${i}日`, inbound: 0, outbound: 0 };
+    const result: { day: string; date: string; inbound: number; outbound: number }[] = [];
+    const start = new Date(dateRange.start);
+    const end = new Date(dateRange.end);
+    for (const cursor = new Date(start); cursor <= end; cursor.setDate(cursor.getDate() + 1)) {
+      const dateKey = toDateStr(new Date(cursor));
+      result.push({ date: dateKey, day: `${cursor.getMonth() + 1}/${cursor.getDate()}`, inbound: 0, outbound: 0 });
     }
-    transactions.forEach((t) => {
-      if (days[t.date]) {
-        if (t.type === 'inbound') days[t.date].inbound += t.quantity;
-        else days[t.date].outbound += t.quantity;
+    filteredTx.forEach((t) => {
+      const entry = result.find((r) => r.date === t.date);
+      if (entry) {
+        if (t.type === 'inbound') entry.inbound += t.quantity;
+        else entry.outbound += t.quantity;
       }
     });
-    return Object.values(days);
-  }, [transactions]);
+    return result;
+  }, [filteredTx, dateRange]);
 
-  const currentMonthKey = new Date().toISOString().slice(0, 7);
-  const currentEntry = monthlyData.find((m) => m.key === currentMonthKey);
-  const prevEntry = monthlyData[monthlyData.length - 2];
-  const monthInbound = currentEntry?.inbound || 0;
-  const monthOutbound = currentEntry?.outbound || 0;
-  const netFlow = monthInbound - monthOutbound;
-  const prevTotal = (prevEntry?.inbound || 0) + (prevEntry?.outbound || 0);
-  const currTotal = monthInbound + monthOutbound;
-  const growthRate = prevTotal > 0 ? ((currTotal - prevTotal) / prevTotal * 100).toFixed(1) : '0';
+  const periodInbound = filteredTx.filter((t) => t.type === 'inbound').reduce((s, t) => s + t.quantity * t.unitPrice, 0);
+  const periodOutbound = filteredTx.filter((t) => t.type === 'outbound').reduce((s, t) => s + t.quantity * t.unitPrice, 0);
+  // 净现金流 = 出库收入 - 入库成本（出库赚钱，入库花钱）
+  const netCashFlow = periodOutbound - periodInbound;
+  const txCount = filteredTx.length;
 
   const categoryData = useMemo(() => {
     const cats: Record<string, { category: string; skuCount: number; totalQty: number; totalValue: number }> = {};
@@ -88,14 +150,14 @@ export default function Reports() {
 
   const topProducts = useMemo(() => {
     const counts: Record<string, number> = {};
-    transactions.filter((t) => t.type === 'outbound').forEach((t) => {
+    filteredTx.filter((t) => t.type === 'outbound').forEach((t) => {
       counts[t.itemId] = (counts[t.itemId] || 0) + t.quantity;
     });
     return Object.entries(counts)
       .map(([id, qty]) => ({ name: items.find((i) => i.id === id)?.name || id, quantity: qty }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
-  }, [items, transactions]);
+  }, [items, filteredTx]);
 
   const healthDist = useMemo(() => {
     let normal = 0, warning = 0, critical = 0;
@@ -116,18 +178,16 @@ export default function Reports() {
 
   const stockHistory = useMemo(() => {
     const base = items.reduce((s, i) => s + i.stock, 0);
-    const data: { day: string; total: number }[] = [];
-    for (let i = 30; i >= 0; i--) {
-      const jitter = Math.round((Math.random() - 0.5) * base * 0.08);
-      data.push({ day: `${30 - i}`, total: base + jitter + i * 3 });
-    }
-    return data;
+    return Array.from({ length: 31 }, (_, i) => ({
+      day: `${i}`,
+      total: Math.max(0, base + (30 - i) * 3 + Math.round((Math.random() - 0.5) * base * 0.05)),
+    }));
   }, [items]);
 
   const reconData = useMemo(() => {
     return items.map((item) => {
-      const inbound = transactions.filter((t) => t.itemId === item.id && t.type === 'inbound').reduce((s, t) => s + t.quantity, 0);
-      const outbound = transactions.filter((t) => t.itemId === item.id && t.type === 'outbound').reduce((s, t) => s + t.quantity, 0);
+      const inbound = filteredTx.filter((t) => t.itemId === item.id && t.type === 'inbound').reduce((s, t) => s + t.quantity, 0);
+      const outbound = filteredTx.filter((t) => t.itemId === item.id && t.type === 'outbound').reduce((s, t) => s + t.quantity, 0);
       const openingStock = item.stock - inbound + outbound;
       const theoreticalClose = openingStock + inbound - outbound;
       const simulatedDisc = item.sku === 'HD-001' ? -5 : item.sku === 'JN-001' ? -3 : item.sku === 'PL-001' ? 2 : 0;
@@ -137,9 +197,13 @@ export default function Reports() {
         theoreticalClose, actualClose: item.stock + simulatedDisc, discrepancy: simulatedDisc,
       };
     });
-  }, [items, transactions]);
+  }, [items, filteredTx]);
 
   const discChartData = reconData.filter((r) => r.discrepancy !== 0);
+
+  const periodLabel = preset === 'custom'
+    ? `${dateRange.start} ~ ${dateRange.end}`
+    : presets.find((p) => p.key === preset)?.label ?? '';
 
   if (isLoading) {
     return (
@@ -151,8 +215,47 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">对账报表</h2>
+      {/* Header + date range */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-2xl font-semibold">对账报表</h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 bg-card rounded-lg p-1 shadow-card">
+            {presets.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPreset(p.key)}
+                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  preset === p.key
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {preset === 'custom' && (
+            <div className="flex items-center gap-2 bg-card rounded-lg px-3 py-1.5 shadow-card">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className="bg-transparent text-xs border-none outline-none text-foreground"
+              />
+              <span className="text-muted-foreground text-xs">至</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className="bg-transparent text-xs border-none outline-none text-foreground"
+              />
+            </div>
+          )}
+        </div>
+      </div>
 
+      {/* Tab switcher */}
       <div className="flex items-center gap-1 bg-card rounded-lg p-1 shadow-card w-fit">
         {tabs.map((tab) => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -166,51 +269,58 @@ export default function Reports() {
 
       {activeTab === 'overview' && (
         <div className="space-y-4">
+          {/* KPI cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-card rounded-lg shadow-card p-4 text-center">
+              <p className="text-sm text-muted-foreground">{periodLabel} 入库总额</p>
+              <p className="text-xl font-bold text-warning mt-1">¥{periodInbound.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">采购支出</p>
+            </div>
+            <div className="bg-card rounded-lg shadow-card p-4 text-center">
+              <p className="text-sm text-muted-foreground">{periodLabel} 出库总额</p>
+              <p className="text-xl font-bold text-success mt-1">¥{periodOutbound.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mt-1">销售收入</p>
+            </div>
+            <div className="bg-card rounded-lg shadow-card p-4 text-center">
+              <p className="text-sm text-muted-foreground">净现金流</p>
+              <p className={`text-xl font-bold mt-1 ${netCashFlow >= 0 ? 'text-success' : 'text-destructive'}`}>
+                {netCashFlow >= 0 ? '+' : ''}¥{netCashFlow.toLocaleString()}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">收入 − 支出</p>
+            </div>
+            <div className="bg-card rounded-lg shadow-card p-4 text-center">
+              <p className="text-sm text-muted-foreground">交易笔数</p>
+              <p className="text-xl font-bold text-primary mt-1">{txCount}</p>
+              <p className="text-xs text-muted-foreground mt-1">笔入/出库记录</p>
+            </div>
+          </div>
+
           <div className="bg-card rounded-lg shadow-card p-5">
-            <h3 className="text-base font-semibold mb-4">月度进出金额对比（近6月）</h3>
+            <h3 className="text-base font-semibold mb-4">月度进出金额对比</h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={monthlyData}>
                 <XAxis dataKey="month" axisLine={false} tickLine={false} />
                 <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} />
                 <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
                 <Legend />
-                <Bar dataKey="inbound" name="入库金额" fill="hsl(230,55%,30%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="outbound" name="出库金额" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(38,92%,50%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="outbound" name="出库金额（收入）" fill="hsl(160,60%,40%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div className="bg-card rounded-lg shadow-card p-5">
-            <h3 className="text-base font-semibold mb-4">本月每日进出数量趋势</h3>
+            <h3 className="text-base font-semibold mb-4">每日进出数量趋势</h3>
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={dailyData}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 11 }}
+                  interval={Math.max(0, Math.floor(dailyData.length / 15) - 1)} />
                 <YAxis axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="inbound" name="入库" stroke="hsl(230,55%,30%)" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="outbound" name="出库" stroke="hsl(38,92%,50%)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="inbound" name="入库量" stroke="hsl(38,92%,50%)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="outbound" name="出库量" stroke="hsl(160,60%,40%)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-card rounded-lg shadow-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">本月入库总额</p>
-              <p className="text-xl font-bold text-primary mt-1">¥{monthInbound.toLocaleString()}</p>
-            </div>
-            <div className="bg-card rounded-lg shadow-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">本月出库总额</p>
-              <p className="text-xl font-bold text-warning mt-1">¥{monthOutbound.toLocaleString()}</p>
-            </div>
-            <div className="bg-card rounded-lg shadow-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">净流入</p>
-              <p className={`text-xl font-bold mt-1 ${netFlow >= 0 ? 'text-success' : 'text-destructive'}`}>
-                {netFlow >= 0 ? '+' : ''}¥{netFlow.toLocaleString()}
-              </p>
-            </div>
-            <div className="bg-card rounded-lg shadow-card p-4 text-center">
-              <p className="text-sm text-muted-foreground">环比增长</p>
-              <p className="text-xl font-bold mt-1">{growthRate}%</p>
-            </div>
           </div>
         </div>
       )}
@@ -231,15 +341,19 @@ export default function Reports() {
               </ResponsiveContainer>
             </div>
             <div className="bg-card rounded-lg shadow-card p-5">
-              <h3 className="text-base font-semibold mb-4">Top 5 热销商品</h3>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={topProducts} layout="vertical">
-                  <XAxis type="number" axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="name" width={80} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="quantity" name="出库量" fill="hsl(230,55%,30%)" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <h3 className="text-base font-semibold mb-4">Top 5 热销商品（{periodLabel}）</h3>
+              {topProducts.length > 0 ? (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={topProducts} layout="vertical">
+                    <XAxis type="number" axisLine={false} tickLine={false} />
+                    <YAxis type="category" dataKey="name" width={80} axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Bar dataKey="quantity" name="出库量" fill="hsl(160,60%,40%)" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-sm text-muted-foreground py-20 text-center">所选时段暂无出库记录</p>
+              )}
             </div>
           </div>
           <div className="bg-card rounded-lg shadow-card overflow-hidden">
@@ -327,8 +441,8 @@ export default function Reports() {
                   ))}
                 </tbody>
               </table>
+              {alertItems.length === 0 && <p className="text-sm text-muted-foreground py-12 text-center">库存状态良好</p>}
             </div>
-            {alertItems.length === 0 && <p className="text-sm text-muted-foreground py-12 text-center">库存状态良好</p>}
           </div>
         </div>
       )}
@@ -337,7 +451,7 @@ export default function Reports() {
         <div className="space-y-4">
           {discChartData.length > 0 && (
             <div className="bg-card rounded-lg shadow-card p-5">
-              <h3 className="text-base font-semibold mb-4">差异值分布</h3>
+              <h3 className="text-base font-semibold mb-4">差异值分布（{periodLabel}）</h3>
               <ResponsiveContainer width="100%" height={250}>
                 <BarChart data={discChartData}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} />
@@ -354,7 +468,10 @@ export default function Reports() {
             </div>
           )}
           <div className="bg-card rounded-lg shadow-card overflow-hidden">
-            <div className="px-5 py-4 border-b"><h3 className="text-base font-semibold">差异对账明细</h3></div>
+            <div className="px-5 py-4 border-b flex items-center justify-between">
+              <h3 className="text-base font-semibold">差异对账明细</h3>
+              <span className="text-xs text-muted-foreground">{periodLabel}</span>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -370,11 +487,11 @@ export default function Reports() {
                 </thead>
                 <tbody>
                   {reconData.map((row, idx) => (
-                    <tr key={row.id} className={`border-b last:border-0 ${row.discrepancy !== 0 ? 'bg-destructive-bg' : idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
+                    <tr key={row.id} className={`border-b last:border-0 ${row.discrepancy !== 0 ? 'bg-destructive/5' : idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
                       <td className="py-3 px-4 font-medium">{row.name} <span className="text-muted-foreground">{row.spec}</span></td>
                       <td className="py-3 px-4 text-right">{row.opening}</td>
-                      <td className="py-3 px-4 text-right text-success">+{row.inbound}</td>
-                      <td className="py-3 px-4 text-right text-destructive">-{row.outbound}</td>
+                      <td className="py-3 px-4 text-right text-warning">+{row.inbound}</td>
+                      <td className="py-3 px-4 text-right text-success">-{row.outbound}</td>
                       <td className="py-3 px-4 text-right">{row.theoreticalClose}</td>
                       <td className="py-3 px-4 text-right font-semibold">{row.actualClose}</td>
                       <td className={`py-3 px-4 text-right font-bold ${row.discrepancy !== 0 ? 'text-destructive' : 'text-muted-foreground'}`}>
@@ -382,11 +499,11 @@ export default function Reports() {
                       </td>
                     </tr>
                   ))}
-                  <tr className="bg-secondary/50 font-semibold">
+                  <tr className="bg-secondary/50 font-semibold border-t-2">
                     <td className="py-3 px-4">合计</td>
                     <td className="py-3 px-4 text-right">{reconData.reduce((s, r) => s + r.opening, 0)}</td>
-                    <td className="py-3 px-4 text-right text-success">+{reconData.reduce((s, r) => s + r.inbound, 0)}</td>
-                    <td className="py-3 px-4 text-right text-destructive">-{reconData.reduce((s, r) => s + r.outbound, 0)}</td>
+                    <td className="py-3 px-4 text-right text-warning">+{reconData.reduce((s, r) => s + r.inbound, 0)}</td>
+                    <td className="py-3 px-4 text-right text-success">-{reconData.reduce((s, r) => s + r.outbound, 0)}</td>
                     <td className="py-3 px-4 text-right">{reconData.reduce((s, r) => s + r.theoreticalClose, 0)}</td>
                     <td className="py-3 px-4 text-right">{reconData.reduce((s, r) => s + r.actualClose, 0)}</td>
                     <td className={`py-3 px-4 text-right font-bold ${reconData.reduce((s, r) => s + r.discrepancy, 0) !== 0 ? 'text-destructive' : ''}`}>

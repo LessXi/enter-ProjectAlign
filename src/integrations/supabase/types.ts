@@ -3145,6 +3145,27 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string
+          id: string
+          role?: string
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          role?: string
+        }
+        Relationships: []
+      }
       purchase_order_items: {
         Row: {
           id: string

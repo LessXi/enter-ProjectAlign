@@ -1,21 +1,34 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
-import { useInventoryStore } from '@/store/inventoryStore';
-import type { Role } from '@/types/inventory';
-import { User, ShoppingCart, Crown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { LogOut, Loader2 } from 'lucide-react';
 
-const roleConfig: Record<Role, { label: string; icon: typeof User }> = {
-  warehouse: { label: '仓管', icon: User },
-  purchasing: { label: '采购', icon: ShoppingCart },
-  boss: { label: '老板', icon: Crown },
+const roleLabel: Record<string, string> = {
+  warehouse: '仓管',
+  purchasing: '采购',
+  boss: '老板',
 };
 
-const roles: Role[] = ['warehouse', 'purchasing', 'boss'];
+const roleBg: Record<string, string> = {
+  warehouse: 'bg-info-bg text-info',
+  purchasing: 'bg-warning-bg text-warning',
+  boss: 'bg-success-bg text-success',
+};
 
 export function Layout() {
-  const currentRole = useInventoryStore((s) => s.currentRole);
-  const setRole = useInventoryStore((s) => s.setRole);
+  const { user, loading, role, displayName, signOut } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="h-full flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="h-full flex overflow-hidden">
@@ -23,26 +36,20 @@ export function Layout() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <header className="h-14 bg-card border-b flex items-center justify-between px-6 flex-shrink-0">
           <div />
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
-            {roles.map((role) => {
-              const config = roleConfig[role];
-              const isActive = currentRole === role;
-              return (
-                <button
-                  key={role}
-                  onClick={() => setRole(role)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <config.icon className="w-3.5 h-3.5" />
-                  {config.label}
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-3">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${roleBg[role] ?? 'bg-secondary text-foreground'}`}>
+              {roleLabel[role] ?? role}
+            </span>
+            <span className="text-sm font-medium text-foreground">
+              {displayName || user.email}
+            </span>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              退出
+            </button>
           </div>
         </header>
         <main className="flex-1 overflow-auto p-6">
