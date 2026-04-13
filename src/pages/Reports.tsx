@@ -410,7 +410,6 @@ export default function Reports() {
                         <p className="font-medium mb-2">{label}</p>
                         <p className="text-lavender">入库金额: ¥{(d?.inbound ?? 0).toLocaleString()}{d?.qtyIn ? ` (${d.qtyIn}件)` : ''}</p>
                         <p className="text-mint">出库金额: ¥{(d?.outbound ?? 0).toLocaleString()}{d?.qtyOut ? ` (${d.qtyOut}件)` : ''}</p>
-                        <p className="text-amber-300 mt-1 border-t border-white/10 pt-1.5">利润: ¥{(d?.profit ?? 0).toLocaleString()}</p>
                       </div>
                     );
                   }}
