@@ -1,98 +1,101 @@
-# UI Redesign: Pastel-Crypto Style
+# UI Redesign: Pastel Bento Layout
 
 ## Context
-The current UI uses a corporate indigo/dark sidebar design. The user wants the visual style of the "pastel-crypto-data" component: sage green backgrounds, dark (#1A1A1A) cards, mint green (#A4F5A6) accents, purple (#B3A1FF) highlights, large rounded corners (24-32px), and premium hover animations.
+Current design has correct pastel colors (sage background, mint/lavender accents) but the **layout is ugly** — flat ERP-style rows with dark cards on sage green looks harsh. The user wants the **bento grid aesthetic** from the pastel-crypto-data reference component: rounded cards with mixed sizing, white/light cards (not dark), visual hierarchy, and engaging layouts.
 
-## Design System Changes
+## Core Design Direction Change
+**FROM**: Dark cards (#1A1A1A) on sage background → harsh, low-contrast, ugly  
+**TO**: White cards on soft sage background, with **mint** and **lavender accent cards** for visual interest — matching the reference component's light, airy, premium feel
 
-### 1. `src/index.css` — New Color Tokens
-Remap all CSS variables to the pastel-crypto palette:
-- **background**: sage green `~100 12% 83%` (#D5DCD4)
-- **card**: dark `0 0% 10%` (#1A1A1A), foreground: white
-- **primary**: mint green `125 85% 81%` (#A4F5A6), foreground: dark
-- **secondary**: light gray `0 0% 96%` (#F5F5F5)
-- **accent**: purple `255 48% 81%` (#B3A1FF), foreground: white
-- **sidebar**: dark `0 0% 10%`, active: mint green
-- **success**: mint green, **warning**: amber, **destructive**: coral red
-- **border**: subtle dark transparent
-- **radius**: `1.5rem` (24px) for large roundedness
-- **shadow-card**: subtle dark shadow, **shadow-elevated**: deeper
-- Add keyframe animations: fadeInUp, scaleIn, pulse-slow
-- Dark mode: deeper sage/black variants
+## Files to Modify
 
-### 2. `tailwind.config.ts` — Animation Utilities
-- Add `fadeInUp`, `scaleIn`, `pulse-slow` keyframes & animation classes
-- borderRadius `lg` = 1.5rem, `xl` = 2rem (32px)
+### 1. `src/index.css` — Color System Fix
+- **card**: Change from dark (`0 0% 10%`) to **white** (`0 0% 100%`)
+- **card-foreground**: Change from light (`0 0% 96%`) to **dark** (`0 0% 10%`)
+- **input/border**: Lighten for white card context
+- **sidebar**: Keep dark for contrast (matches reference sidebar feel)
+- **popover**: Switch to white
 
-### 3. Component Updates
+### 2. `src/components/Layout.tsx` — Header Redesign
+- White header with subtle bottom border
+- Clean minimal design to match light card aesthetic
 
-#### `src/components/AppSidebar.tsx`
-- Dark bg (#1A1A1A) stays via `bg-sidebar`
-- Active link: mint green bg with dark text
-- Logo icon: mint green circle instead of indigo square
-- Rounder items (rounded-xl)
+### 3. `src/components/AppSidebar.tsx` — Keep dark sidebar (good contrast with light content area)
+- Minor polish: slightly softer active state
 
-#### `src/components/Layout.tsx`
-- Header: dark bg (`bg-card`) with white text
-- Role badges: mint/purple/amber pill styles
-- Logout button: ghost on dark
+### 4. `src/pages/Index.tsx` — **BENTO GRID LAYOUT** (biggest change)
+Current: flat rows of StatsCards + 2-col tables  
+New layout:
+- **Bento grid** with mixed-size cards
+- Featured stat cards with **mint** or **lavender backgrounds** (like reference)
+- Mini bar chart in a tall card (like SalesStatisticsCard)
+- Inventory warnings in a prominent card
+- Recent transactions in a compact card
+- Boss gets extra approval card
+- Use `grid-rows-*` and `row-span-*` for varied heights
 
-#### `src/components/StatsCard.tsx`
-- Dark card bg (auto from `bg-card`), white text (auto from `card-foreground`)
-- Icon containers: mint/purple/amber circles (rounded-full)
-- Hover: subtle lift + scale
+### 5. `src/components/StatsCard.tsx` — Enhanced Card Variants
+- Add `variant` prop: 'default' | 'mint' | 'lavender' | 'dark'
+- 'mint': bg-[#A4F5A6] with dark text (like reference BTC card)
+- 'lavender': bg-[#B3A1FF] with white text (like reference Market Cap card)
+- 'dark': bg-[#1A1A1A] with white text (like reference Sales card)
+- Larger font for value, more padding for bento feel
 
-#### `src/components/StatusBadge.tsx`
-- Badges: mint green for "normal", amber for "warning", coral for "critical"
-- More rounded (rounded-full pills)
+### 6. `src/pages/Inventory.tsx` — Light card tables
+- White card with proper contrast for table content
+- Search bar and filter styled for light theme
 
-#### `src/pages/Login.tsx`
-- Sage green full-page bg (auto)
-- Card: dark bg with white text
-- Input: dark bg with lighter border
-- Tab switcher: mint green active
-- Role buttons: dark border, mint accent on select
-- Primary button: mint green
+### 7. `src/pages/Inbound.tsx` + `src/pages/Outbound.tsx`
+- White card forms and tables
+- Form labels in dark text, inputs with light borders
 
-#### `src/pages/Index.tsx`
-- Stats cards auto-styled via design system
-- Chart colors: mint green + purple bars
-- Warning table: dark rows, mint/purple accents
+### 8. `src/pages/PurchaseOrders.tsx`
+- Same white card treatment for forms/tables
 
-#### `src/pages/Inventory.tsx`, `Inbound.tsx`, `Outbound.tsx`, `PurchaseOrders.tsx`
-- Tables: dark header, alternating dark rows (via secondary)
-- Inputs/selects: dark bg, light border, mint focus ring
-- Buttons: mint primary, purple secondary
+### 9. `src/pages/Reports.tsx`
+- White chart cards
+- KPI cards with mint/lavender accent versions
+- Chart tooltip style unchanged (dark works well for contrast)
 
-#### `src/pages/Reports.tsx`
-- Chart colors: mint green + purple (instead of indigo + amber)
-- Pill switchers: dark bg, mint active
-- KPI cards: auto from design system
+### 10. `src/pages/StaffManagement.tsx`
+- White card table, white dialog backgrounds
+- Light form inputs
 
-#### `src/pages/StaffManagement.tsx`
-- Dialog: dark bg with white text
-- Table: same dark theme
+### 11. `src/pages/Login.tsx`
+- White card on sage background (clean, premium look)
+- Tab switcher with mint accent
+- Input fields with light borders
 
-### Files to Modify
-1. `src/index.css` — Complete token overhaul
-2. `tailwind.config.ts` — Animations, larger radius
-3. `src/components/AppSidebar.tsx` — Rounder, mint active state
-4. `src/components/Layout.tsx` — Dark header
-5. `src/components/StatsCard.tsx` — Icon circles, hover animation
-6. `src/components/StatusBadge.tsx` — Rounded-full pills
-7. `src/pages/Login.tsx` — Dark card, mint accents
-8. `src/pages/Index.tsx` — Chart colors
-9. `src/pages/Inventory.tsx` — Input/table styling
-10. `src/pages/Inbound.tsx` — Form styling
-11. `src/pages/Outbound.tsx` — Form styling
-12. `src/pages/PurchaseOrders.tsx` — Form/table styling
-13. `src/pages/Reports.tsx` — Chart colors, switcher pills
-14. `src/pages/StaffManagement.tsx` — Dialog/table styling
+### 12. `src/components/StatusBadge.tsx`
+- Adjust for light card background context
 
-### Verification
-- All pages should render with sage green background, dark cards, mint/purple accents
-- Text contrast passes WCAG AA on dark cards
-- Hover animations (lift + scale) on cards
-- Login page: dark card on sage green bg
-- Charts use mint green + purple colors
-- Sidebar: dark with mint active
+### 13. `tailwind.config.ts`
+- Add `mint` and `lavender` color tokens
+- Keep existing shadow/animation configs
+
+## Key Bento Grid Layout for Dashboard (Index.tsx)
+
+```
+┌──────────────┬──────────────┬──────────────┐
+│   SKU Count  │  Warning     │   Monthly    │
+│   (mint bg)  │  Count       │   Trend      │
+│              │  (lavender)  │   Bar Chart  │
+├──────────────┼──────────────┤   (dark bg,  │
+│  Inbound $   │  Outbound $  │   tall card) │
+│  (white)     │  (white)     │              │
+├──────────────┴──────────────┼──────────────┤
+│   Inventory Warnings        │  Recent Txs  │
+│   (white, full table)       │  (white)     │
+└─────────────────────────────┴──────────────┘
+```
+
+Boss gets additional row: Inventory Value (mint), Pending POs card
+
+## Verification
+1. Login page: white card should be clearly readable on sage background
+2. Dashboard: bento grid with mixed card sizes and accent colors
+3. All tables: dark text on white card background — proper contrast
+4. Chart tooltips: keep dark style (good contrast on hover)
+5. Sidebar: remains dark for visual anchor
+6. Forms: white cards with properly visible input fields
+7. No white-on-white or dark-on-dark contrast issues
