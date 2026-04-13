@@ -85,7 +85,7 @@ export default function StaffManagement() {
     setFormRole('warehouse');
     setFormError('');
     setShowPassword(false);
-    setCopied(false);
+    setCopiedId(null);
   };
 
   const openCreate = () => {

@@ -52,9 +52,10 @@ export default function PurchaseOrders() {
   const handleCreate = async (status: POStatus) => {
     if (!poItemId || !poQty || !poPrice || !poSupplier) return;
     try {
+      const ts = Date.now().toString(36).toUpperCase();
       const num = purchaseOrders.length + 1;
       await createPO.mutateAsync({
-        poNumber: `PO-2026-${String(num).padStart(3, '0')}`,
+        poNumber: `PO-${ts}-${String(num).padStart(3, '0')}`,
         items: [{ itemId: poItemId, quantity: Number(poQty), unitPrice: Number(poPrice) }],
         supplier: poSupplier, status, createdDate: new Date().toISOString().split('T')[0],
         expectedDate: '', note: poNote,
