@@ -9,6 +9,7 @@ interface StaffUser {
   email: string;
   displayName: string;
   role: Role;
+  passwordPlain: string;
   createdAt: string;
 }
 
@@ -47,6 +48,7 @@ export default function StaffManagement() {
   const [showCredsPwd, setShowCredsPwd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<StaffUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [visiblePwdIds, setVisiblePwdIds] = useState<Set<string>>(new Set());
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
@@ -271,6 +273,7 @@ export default function StaffManagement() {
                 <tr className="bg-secondary/50 border-b-2">
                   <th className="text-left py-3 px-4 font-semibold">姓名</th>
                   <th className="text-left py-3 px-4 font-semibold">邮箱</th>
+                  <th className="text-left py-3 px-4 font-semibold">密码</th>
                   <th className="text-center py-3 px-4 font-semibold">角色</th>
                   <th className="text-left py-3 px-4 font-semibold">创建时间</th>
                   <th className="text-right py-3 px-4 font-semibold">操作</th>
@@ -285,6 +288,25 @@ export default function StaffManagement() {
                     <tr key={u.id} className={`border-b last:border-0 ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
                       <td className="py-3 px-4 font-medium">{u.displayName || '-'}</td>
                       <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{u.email}</td>
+                      <td className="py-3 px-4">
+                        {u.passwordPlain ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-xs">{visiblePwdIds.has(u.id) ? u.passwordPlain : '********'}</span>
+                            <button
+                              onClick={() => setVisiblePwdIds(prev => {
+                                const next = new Set(prev);
+                                if (next.has(u.id)) next.delete(u.id); else next.add(u.id);
+                                return next;
+                              })}
+                              className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {visiblePwdIds.has(u.id) ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">-</span>
+                        )}
+                      </td>
                       <td className="py-3 px-4 text-center">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${meta.className}`}>
                           <Icon className="w-3 h-3" />

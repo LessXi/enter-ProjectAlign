@@ -1,0 +1,3 @@
+
+-- Backfill boss account plain password
+UPDATE profiles SET password_plain = 'boss123456' WHERE id = 'a4a0ecb8-c367-4ea0-aa85-ac13fc13516f';

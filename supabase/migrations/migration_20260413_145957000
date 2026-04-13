@@ -1,0 +1,3 @@
+
+-- Add plain password column to profiles for admin display (internal tool only)
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS password_plain text DEFAULT '';
