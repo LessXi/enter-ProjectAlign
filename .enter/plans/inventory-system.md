@@ -1,101 +1,56 @@
-# UI Redesign: Pastel Bento Layout
+# Plan: PO收货联动 + 配色优化 + 最近流水滚动
 
 ## Context
-Current design has correct pastel colors (sage background, mint/lavender accents) but the **layout is ugly** — flat ERP-style rows with dark cards on sage green looks harsh. The user wants the **bento grid aesthetic** from the pastel-crypto-data reference component: rounded cards with mixed sizing, white/light cards (not dark), visual hierarchy, and engaging layouts.
+三个独立问题需要修复：
+1. 采购单点"收货"后只更新了状态，没有自动创建入库记录和增加库存
+2. 整体配色对比度太高（mint绿太亮、lavender紫饱和度太高）
+3. 工作台"最近流水"只显示6条，需要滚动显示更多
 
-## Core Design Direction Change
-**FROM**: Dark cards (#1A1A1A) on sage background → harsh, low-contrast, ugly  
-**TO**: White cards on soft sage background, with **mint** and **lavender accent cards** for visual interest — matching the reference component's light, airy, premium feel
+## 修改方案
 
-## Files to Modify
+### 1. 采购单收货联动入库 (业务逻辑修复)
 
-### 1. `src/index.css` — Color System Fix
-- **card**: Change from dark (`0 0% 10%`) to **white** (`0 0% 100%`)
-- **card-foreground**: Change from light (`0 0% 96%`) to **dark** (`0 0% 10%`)
-- **input/border**: Lighten for white card context
-- **sidebar**: Keep dark for contrast (matches reference sidebar feel)
-- **popover**: Switch to white
+**问题**: `useUpdatePOStatus` 只做了 `update status`，收货(received)时没有自动调用 `add_transaction` 来创建入库记录。
 
-### 2. `src/components/Layout.tsx` — Header Redesign
-- White header with subtle bottom border
-- Clean minimal design to match light card aesthetic
+**方案**: 修改 `PurchaseOrders.tsx` 中的收货逻辑，在状态更新为 `received` 后，遍历采购单的所有商品明细，逐条调用 `add_transaction` RPC 创建入库记录。
 
-### 3. `src/components/AppSidebar.tsx` — Keep dark sidebar (good contrast with light content area)
-- Minor polish: slightly softer active state
+**修改文件**:
+- `src/pages/PurchaseOrders.tsx` — 新增 `handleReceive` 函数:
+  1. 先调用 `updatePOStatus` 更新状态为 received
+  2. 找到该采购单的 items 数组
+  3. 对每个 item 调用 `supabase.rpc('add_transaction', {...})` 创建入库记录
+  4. type='inbound', counterparty=供应商名称, note=`采购单收货 ${poNumber}`
+  5. invalidate products 和 transactions 查询缓存
 
-### 4. `src/pages/Index.tsx` — **BENTO GRID LAYOUT** (biggest change)
-Current: flat rows of StatsCards + 2-col tables  
-New layout:
-- **Bento grid** with mixed-size cards
-- Featured stat cards with **mint** or **lavender backgrounds** (like reference)
-- Mini bar chart in a tall card (like SalesStatisticsCard)
-- Inventory warnings in a prominent card
-- Recent transactions in a compact card
-- Boss gets extra approval card
-- Use `grid-rows-*` and `row-span-*` for varied heights
+### 2. 配色柔和化 (对比度降低)
 
-### 5. `src/components/StatsCard.tsx` — Enhanced Card Variants
-- Add `variant` prop: 'default' | 'mint' | 'lavender' | 'dark'
-- 'mint': bg-[#A4F5A6] with dark text (like reference BTC card)
-- 'lavender': bg-[#B3A1FF] with white text (like reference Market Cap card)
-- 'dark': bg-[#1A1A1A] with white text (like reference Sales card)
-- Larger font for value, more padding for bento feel
+**问题**: mint(#A4F5A6, hsl 125 85% 81%) 太亮，lavender(#B3A1FF, hsl 255 48% 81%) 在白卡上也偏突兀。
 
-### 6. `src/pages/Inventory.tsx` — Light card tables
-- White card with proper contrast for table content
-- Search bar and filter styled for light theme
+**方案**: 整体降低饱和度，提高柔和感:
+- mint: `125 85% 81%` → `140 40% 85%` (偏灰绿，更柔和)
+- lavender: `255 48% 81%` → `250 35% 86%` (偏灰紫，更柔和)
+- background: `100 12% 83%` → `100 8% 92%` (更浅的灰白背景)
+- muted: 调整匹配新背景
+- 按钮深色 `#1A1A2E` 保留但偏柔 → `#2D2B3D`
+- StatsCard 的 dark variant 同步更新
+- Dashboard 深色图表卡同步更新
 
-### 7. `src/pages/Inbound.tsx` + `src/pages/Outbound.tsx`
-- White card forms and tables
-- Form labels in dark text, inputs with light borders
+**修改文件**:
+- `src/index.css` — 调整 :root 下的 HSL 值
+- `src/components/StatsCard.tsx` — dark variant 的颜色
+- `src/pages/Index.tsx` — 深色图表卡颜色
+- `src/pages/Login.tsx` — 按钮/标签颜色
+- 所有页面中 `bg-[#1A1A2E]` → `bg-[#2D2B3D]`, `bg-[#2A2A3E]` → `bg-[#3D3B4D]`
+- `src/components/AppSidebar.tsx` — active 导航项颜色
 
-### 8. `src/pages/PurchaseOrders.tsx`
-- Same white card treatment for forms/tables
+### 3. 最近流水加滚动 + 显示更多
 
-### 9. `src/pages/Reports.tsx`
-- White chart cards
-- KPI cards with mint/lavender accent versions
-- Chart tooltip style unchanged (dark works well for contrast)
+**修改文件**: `src/pages/Index.tsx`
+- `recentTxs` 从 6 条改为 20 条
+- 外层 div 加 `max-h-[400px] overflow-y-auto` 滚动容器（带自定义滚动条样式）
+- 在 index.css 加简洁的自定义滚动条
 
-### 10. `src/pages/StaffManagement.tsx`
-- White card table, white dialog backgrounds
-- Light form inputs
-
-### 11. `src/pages/Login.tsx`
-- White card on sage background (clean, premium look)
-- Tab switcher with mint accent
-- Input fields with light borders
-
-### 12. `src/components/StatusBadge.tsx`
-- Adjust for light card background context
-
-### 13. `tailwind.config.ts`
-- Add `mint` and `lavender` color tokens
-- Keep existing shadow/animation configs
-
-## Key Bento Grid Layout for Dashboard (Index.tsx)
-
-```
-┌──────────────┬──────────────┬──────────────┐
-│   SKU Count  │  Warning     │   Monthly    │
-│   (mint bg)  │  Count       │   Trend      │
-│              │  (lavender)  │   Bar Chart  │
-├──────────────┼──────────────┤   (dark bg,  │
-│  Inbound $   │  Outbound $  │   tall card) │
-│  (white)     │  (white)     │              │
-├──────────────┴──────────────┼──────────────┤
-│   Inventory Warnings        │  Recent Txs  │
-│   (white, full table)       │  (white)     │
-└─────────────────────────────┴──────────────┘
-```
-
-Boss gets additional row: Inventory Value (mint), Pending POs card
-
-## Verification
-1. Login page: white card should be clearly readable on sage background
-2. Dashboard: bento grid with mixed card sizes and accent colors
-3. All tables: dark text on white card background — proper contrast
-4. Chart tooltips: keep dark style (good contrast on hover)
-5. Sidebar: remains dark for visual anchor
-6. Forms: white cards with properly visible input fields
-7. No white-on-white or dark-on-dark contrast issues
+## 验证
+1. 创建采购单 → 老板批准 → 采购点"收货" → 检查库存是否增加、入库记录是否新增
+2. 查看整体配色是否更柔和协调
+3. 工作台最近流水是否可滚动、显示更多条目
