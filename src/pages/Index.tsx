@@ -62,63 +62,53 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">工作台</h2>
+      <h2 className="text-2xl font-bold text-foreground">工作台</h2>
 
       <div className={`grid gap-4 ${isBoss ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
-        <StatsCard title="总 SKU 数" value={items.length} icon={Package} iconClassName="bg-primary/10 text-primary" />
-        <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} iconClassName="bg-warning-bg text-warning" />
+        <StatsCard title="总 SKU 数" value={items.length} icon={Package} iconClassName="bg-primary/20 text-primary" />
+        <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} iconClassName="bg-warning/20 text-warning" />
         {isBoss && (
-          <StatsCard
-            title="库存总值"
-            value={`¥${totalValue.toLocaleString()}`}
-            icon={DollarSign}
-            iconClassName="bg-success-bg text-success"
-          />
+          <StatsCard title="库存总值" value={`¥${totalValue.toLocaleString()}`} icon={DollarSign} iconClassName="bg-primary/20 text-primary" />
         )}
-        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} iconClassName="bg-warning-bg text-warning" />
-        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} iconClassName="bg-success-bg text-success" />
+        <StatsCard title="本月入库额" value={`¥${monthInbound.toLocaleString()}`} icon={ArrowDownToLine} iconClassName="bg-warning/20 text-warning" />
+        <StatsCard title="本月出库额" value={`¥${monthOutbound.toLocaleString()}`} icon={ArrowUpFromLine} iconClassName="bg-primary/20 text-primary" />
         {isBoss && (
-          <StatsCard
-            title="待审批采购单"
-            value={pendingPOs.length}
-            icon={Clock}
-            iconClassName="bg-info-bg text-info"
-          />
+          <StatsCard title="待审批采购单" value={pendingPOs.length} icon={Clock} iconClassName="bg-accent/20 text-accent" />
         )}
       </div>
 
       {isBoss && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="bg-card rounded-lg shadow-card p-5">
-            <h3 className="text-base font-semibold mb-4">月度进出趋势</h3>
+          <div className="bg-card rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-elevated">
+            <h3 className="text-base font-semibold text-card-foreground mb-4">月度进出趋势</h3>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={miniChartData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
-                <Bar dataKey="inbound" name="入库" fill="hsl(230, 55%, 30%)" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="outbound" name="出库" fill="hsl(38, 92%, 50%)" radius={[4, 4, 0, 0]} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'hsl(0,0%,50%)' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'hsl(0,0%,50%)' }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
+                <Bar dataKey="inbound" name="入库" fill="hsl(125, 85%, 81%)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="outbound" name="出库" fill="hsl(255, 48%, 81%)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-card rounded-lg shadow-card p-5">
+          <div className="bg-card rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-elevated">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-semibold">待审批采购单</h3>
-              <Link to="/purchase-orders" className="text-xs text-primary hover:underline">查看全部</Link>
+              <h3 className="text-base font-semibold text-card-foreground">待审批采购单</h3>
+              <Link to="/purchase-orders" className="text-xs text-primary hover:brightness-90 font-medium">查看全部</Link>
             </div>
             {pendingPOs.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-8 text-center">暂无待审批采购单</p>
+              <p className="text-sm text-card-foreground/40 py-8 text-center">暂无待审批采购单</p>
             ) : (
               <div className="space-y-3">
                 {pendingPOs.map((po) => (
-                  <div key={po.id} className="flex items-center justify-between py-2 px-3 bg-secondary/50 rounded-md">
+                  <div key={po.id} className="flex items-center justify-between py-2.5 px-4 bg-card-foreground/5 rounded-xl transition-all duration-200 hover:bg-card-foreground/10">
                     <div>
-                      <span className="text-sm font-medium">{po.poNumber}</span>
-                      <span className="text-xs text-muted-foreground ml-2">{po.supplier}</span>
+                      <span className="text-sm font-medium text-card-foreground">{po.poNumber}</span>
+                      <span className="text-xs text-card-foreground/40 ml-2">{po.supplier}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">
+                      <span className="text-sm font-semibold text-card-foreground">
                         ¥{po.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0).toLocaleString()}
                       </span>
                       <POBadge status={po.status} />
@@ -132,37 +122,37 @@ export default function Dashboard() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-card rounded-lg shadow-card p-5">
+        <div className="bg-card rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-elevated">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold">库存预警</h3>
-            <Link to="/inventory" className="text-xs text-primary hover:underline">查看全部</Link>
+            <h3 className="text-base font-semibold text-card-foreground">库存预警</h3>
+            <Link to="/inventory" className="text-xs text-primary hover:brightness-90 font-medium">查看全部</Link>
           </div>
           {warningItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">库存状态良好</p>
+            <p className="text-sm text-card-foreground/40 py-8 text-center">库存状态良好</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 font-semibold text-muted-foreground">品名</th>
-                    <th className="text-right py-2 font-semibold text-muted-foreground">库存</th>
-                    <th className="text-right py-2 font-semibold text-muted-foreground">阈值</th>
-                    <th className="text-right py-2 font-semibold text-muted-foreground">状态</th>
-                    {isPurchasing && <th className="text-right py-2 font-semibold text-muted-foreground">操作</th>}
+                  <tr className="border-b border-card-foreground/10">
+                    <th className="text-left py-2.5 font-semibold text-card-foreground/50">品名</th>
+                    <th className="text-right py-2.5 font-semibold text-card-foreground/50">库存</th>
+                    <th className="text-right py-2.5 font-semibold text-card-foreground/50">阈值</th>
+                    <th className="text-right py-2.5 font-semibold text-card-foreground/50">状态</th>
+                    {isPurchasing && <th className="text-right py-2.5 font-semibold text-card-foreground/50">操作</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {warningItems.map((item) => (
-                    <tr key={item.id} className="border-b last:border-0">
-                      <td className="py-2">{item.name} <span className="text-muted-foreground">{item.spec}</span></td>
-                      <td className="py-2 text-right font-medium">{item.stock}</td>
-                      <td className="py-2 text-right text-muted-foreground">{item.threshold}</td>
-                      <td className="py-2 text-right"><StockBadge status={getStockStatus(item.stock, item.threshold)} /></td>
+                    <tr key={item.id} className="border-b border-card-foreground/5 last:border-0">
+                      <td className="py-2.5 text-card-foreground">{item.name} <span className="text-card-foreground/40">{item.spec}</span></td>
+                      <td className="py-2.5 text-right font-medium text-card-foreground">{item.stock}</td>
+                      <td className="py-2.5 text-right text-card-foreground/40">{item.threshold}</td>
+                      <td className="py-2.5 text-right"><StockBadge status={getStockStatus(item.stock, item.threshold)} /></td>
                       {isPurchasing && (
-                        <td className="py-2 text-right">
+                        <td className="py-2.5 text-right">
                           <Link
                             to={`/purchase-orders?prefill=${item.id}`}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/15 text-primary text-xs font-medium hover:bg-primary/25 transition-all duration-200"
                           >
                             <ShoppingCart className="w-3 h-3" />
                             去采购
@@ -177,31 +167,31 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="bg-card rounded-lg shadow-card p-5">
-          <h3 className="text-base font-semibold mb-4">最近流水</h3>
+        <div className="bg-card rounded-2xl shadow-card p-6 transition-all duration-300 hover:shadow-elevated">
+          <h3 className="text-base font-semibold text-card-foreground mb-4">最近流水</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-semibold text-muted-foreground">类型</th>
-                  <th className="text-left py-2 font-semibold text-muted-foreground">品名</th>
-                  <th className="text-right py-2 font-semibold text-muted-foreground">数量</th>
-                  <th className="text-right py-2 font-semibold text-muted-foreground">日期</th>
+                <tr className="border-b border-card-foreground/10">
+                  <th className="text-left py-2.5 font-semibold text-card-foreground/50">类型</th>
+                  <th className="text-left py-2.5 font-semibold text-card-foreground/50">品名</th>
+                  <th className="text-right py-2.5 font-semibold text-card-foreground/50">数量</th>
+                  <th className="text-right py-2.5 font-semibold text-card-foreground/50">日期</th>
                 </tr>
               </thead>
               <tbody>
                 {recentTxs.map((tx) => (
-                  <tr key={tx.id} className="border-b last:border-0">
-                    <td className="py-2">
-                      <span className={tx.type === 'inbound' ? 'text-success font-medium' : 'text-destructive font-medium'}>
+                  <tr key={tx.id} className="border-b border-card-foreground/5 last:border-0">
+                    <td className="py-2.5">
+                      <span className={tx.type === 'inbound' ? 'text-primary font-medium' : 'text-destructive font-medium'}>
                         {tx.type === 'inbound' ? '入库' : '出库'}
                       </span>
                     </td>
-                    <td className="py-2">{getItemName(tx.itemId)}</td>
-                    <td className="py-2 text-right font-medium">
+                    <td className="py-2.5 text-card-foreground">{getItemName(tx.itemId)}</td>
+                    <td className="py-2.5 text-right font-medium text-card-foreground">
                       {tx.type === 'inbound' ? '+' : '-'}{tx.quantity}
                     </td>
-                    <td className="py-2 text-right text-muted-foreground">{tx.date}</td>
+                    <td className="py-2.5 text-right text-card-foreground/40">{tx.date}</td>
                   </tr>
                 ))}
               </tbody>

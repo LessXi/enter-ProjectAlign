@@ -217,10 +217,10 @@ export default function StaffManagement() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">员工管理</h2>
+        <h2 className="text-2xl font-bold text-foreground">员工管理</h2>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all shadow-card"
         >
           <Plus className="w-4 h-4" />
           创建账号
@@ -229,8 +229,8 @@ export default function StaffManagement() {
 
       {/* Toast */}
       {toast && (
-        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
-          toast.type === 'success' ? 'bg-success-bg border border-success/20 text-success' : 'bg-destructive/10 border border-destructive/20 text-destructive'
+        <div className={`rounded-xl px-4 py-3 text-sm font-medium ${
+          toast.type === 'success' ? 'bg-primary/15 border border-primary/25 text-primary' : 'bg-destructive/15 border border-destructive/25 text-destructive'
         }`}>
           {toast.msg}
         </div>
@@ -242,17 +242,17 @@ export default function StaffManagement() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="bg-card rounded-lg shadow-card overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-secondary/50 border-b-2">
-                  <th className="text-left py-3 px-4 font-semibold">姓名</th>
-                  <th className="text-left py-3 px-4 font-semibold">邮箱</th>
-                  <th className="text-left py-3 px-4 font-semibold">密码</th>
-                  <th className="text-center py-3 px-4 font-semibold">角色</th>
-                  <th className="text-left py-3 px-4 font-semibold">创建时间</th>
-                  <th className="text-right py-3 px-4 font-semibold">操作</th>
+                <tr className="border-b border-card-foreground/10">
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">姓名</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">邮箱</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">密码</th>
+                  <th className="text-center py-3.5 px-5 font-semibold text-card-foreground/50">角色</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">创建时间</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -261,49 +261,49 @@ export default function StaffManagement() {
                   const Icon = meta.icon;
                   const isSelf = u.id === currentUser?.id;
                   return (
-                    <tr key={u.id} className={`border-b last:border-0 ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
-                      <td className="py-3 px-4 font-medium">{u.displayName || '-'}</td>
-                      <td className="py-3 px-4 text-muted-foreground font-mono text-xs">{u.email}</td>
-                      <td className="py-3 px-4">
+                    <tr key={u.id} className={`border-b border-card-foreground/5 last:border-0 ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                      <td className="py-3.5 px-5 font-medium text-card-foreground">{u.displayName || '-'}</td>
+                      <td className="py-3.5 px-5 text-card-foreground/50 font-mono text-xs">{u.email}</td>
+                      <td className="py-3.5 px-5">
                         {u.passwordPlain ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono text-xs">{visiblePwdIds.has(u.id) ? u.passwordPlain : '********'}</span>
+                            <span className="font-mono text-xs text-card-foreground">{visiblePwdIds.has(u.id) ? u.passwordPlain : '********'}</span>
                             <button
                               onClick={() => setVisiblePwdIds(prev => {
                                 const next = new Set(prev);
                                 if (next.has(u.id)) next.delete(u.id); else next.add(u.id);
                                 return next;
                               })}
-                              className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                              className="p-0.5 rounded-lg hover:bg-card-foreground/10 text-card-foreground/40 hover:text-card-foreground transition-colors"
                             >
                               {visiblePwdIds.has(u.id) ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                             </button>
                             <button
                               onClick={() => copyToClipboard(`姓名: ${u.displayName}\n邮箱: ${u.email}\n密码: ${u.passwordPlain}\n角色: ${roleMeta[u.role]?.label || u.role}`, u.id)}
-                              className="p-0.5 rounded hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                              className="p-0.5 rounded-lg hover:bg-card-foreground/10 text-card-foreground/40 hover:text-card-foreground transition-colors"
                               title="复制账号信息"
                             >
-                              {copiedId === u.id ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+                              {copiedId === u.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <Copy className="w-3.5 h-3.5" />}
                             </button>
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs">-</span>
+                          <span className="text-card-foreground/30 text-xs">-</span>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${meta.className}`}>
+                      <td className="py-3.5 px-5 text-center">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${meta.className}`}>
                           <Icon className="w-3 h-3" />
                           {meta.label}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-muted-foreground text-xs">
+                      <td className="py-3.5 px-5 text-card-foreground/40 text-xs">
                         {new Date(u.createdAt).toLocaleDateString('zh-CN')}
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => openEdit(u)}
-                            className="p-1.5 rounded-md hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+                            className="p-1.5 rounded-lg hover:bg-card-foreground/10 transition-colors text-card-foreground/40 hover:text-card-foreground"
                             title="编辑"
                           >
                             <Pencil className="w-3.5 h-3.5" />
@@ -311,7 +311,7 @@ export default function StaffManagement() {
                           {!isSelf && (
                             <button
                               onClick={() => setDeleteTarget(u)}
-                              className="p-1.5 rounded-md hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive"
+                              className="p-1.5 rounded-lg hover:bg-destructive/20 transition-colors text-card-foreground/40 hover:text-destructive"
                               title="删除"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -324,7 +324,7 @@ export default function StaffManagement() {
                 })}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-muted-foreground">暂无员工数据</td>
+                    <td colSpan={5} className="py-12 text-center text-card-foreground/40">暂无员工数据</td>
                   </tr>
                 )}
               </tbody>
@@ -335,78 +335,54 @@ export default function StaffManagement() {
 
       {/* Create / Edit Dialog */}
       {dialogMode && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setDialogMode(null)}>
-          <div className="bg-card rounded-xl shadow-xl w-full max-w-md p-6 mx-4" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setDialogMode(null)}>
+          <div className="bg-card rounded-2xl shadow-elevated w-full max-w-md p-6 mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold text-card-foreground">
                 {dialogMode === 'create' ? '创建员工账号' : `编辑 ${editingUser?.displayName || ''}`}
               </h3>
-              <button onClick={() => setDialogMode(null)} className="text-muted-foreground hover:text-foreground">
+              <button onClick={() => setDialogMode(null)} className="text-card-foreground/40 hover:text-card-foreground transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1.5">姓名 *</label>
-                <input
-                  type="text"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="输入姓名"
-                  className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                />
+                <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">姓名 *</label>
+                <input type="text" value={formName} onChange={(e) => setFormName(e.target.value)} placeholder="输入姓名"
+                  className="w-full bg-input border border-border rounded-xl px-4 py-2.5 text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">邮箱 *</label>
-                <input
-                  type="email"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  placeholder="输入邮箱地址"
-                  className="w-full bg-background border rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                />
+                <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">邮箱 *</label>
+                <input type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} placeholder="输入邮箱地址"
+                  className="w-full bg-input border border-border rounded-xl px-4 py-2.5 text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">
+                <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">
                   密码 {dialogMode === 'create' ? '*' : '（留空则不修改）'}
                 </label>
                 <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={formPassword}
-                    onChange={(e) => setFormPassword(e.target.value)}
+                  <input type={showPassword ? 'text' : 'password'} value={formPassword} onChange={(e) => setFormPassword(e.target.value)}
                     placeholder={dialogMode === 'create' ? '设置密码（至少6位）' : '输入新密码'}
-                    className="w-full bg-background border rounded-lg px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
+                    className="w-full bg-input border border-border rounded-xl px-4 py-2.5 pr-10 text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-card-foreground/40 hover:text-card-foreground transition-colors">
                     {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">角色 *</label>
+                <label className="block text-sm font-medium text-card-foreground/60 mb-2">角色 *</label>
                 <div className="grid grid-cols-3 gap-2">
                   {(Object.entries(roleMeta) as [Role, typeof roleMeta.warehouse][]).map(([value, meta]) => {
                     const RIcon = meta.icon;
                     return (
-                      <button
-                        key={value}
-                        onClick={() => setFormRole(value)}
-                        className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border-2 text-center transition-all ${
-                          formRole === value
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/40'
-                        }`}
-                      >
-                        <RIcon className={`w-5 h-5 ${formRole === value ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <span className={`text-sm font-semibold ${formRole === value ? 'text-primary' : 'text-foreground'}`}>
-                          {meta.label}
-                        </span>
+                      <button key={value} onClick={() => setFormRole(value)}
+                        className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 text-center transition-all duration-200 ${
+                          formRole === value ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/40'
+                        }`}>
+                        <RIcon className={`w-5 h-5 ${formRole === value ? 'text-primary' : 'text-card-foreground/40'}`} />
+                        <span className={`text-sm font-semibold ${formRole === value ? 'text-primary' : 'text-card-foreground'}`}>{meta.label}</span>
                       </button>
                     );
                   })}
@@ -414,16 +390,14 @@ export default function StaffManagement() {
               </div>
 
               {formError && (
-                <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-3.5 py-2.5 text-sm text-destructive">
+                <div className="bg-destructive/15 border border-destructive/25 rounded-xl px-4 py-2.5 text-sm text-destructive">
                   {formError}
                 </div>
               )}
 
-              <button
-                onClick={dialogMode === 'create' ? handleCreate : handleUpdate}
+              <button onClick={dialogMode === 'create' ? handleCreate : handleUpdate}
                 disabled={submitting || !formEmail || !formName || (dialogMode === 'create' && !formPassword)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
-              >
+                className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all disabled:opacity-40 shadow-card">
                 {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {dialogMode === 'create' ? '创建账号' : '保存修改'}
               </button>
@@ -434,24 +408,19 @@ export default function StaffManagement() {
 
       {/* Delete Confirm Dialog */}
       {deleteTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setDeleteTarget(null)}>
-          <div className="bg-card rounded-xl shadow-xl w-full max-w-sm p-6 mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-3">确认删除</h3>
-            <p className="text-sm text-muted-foreground mb-5">
-              确定要删除 <span className="font-medium text-foreground">{deleteTarget.displayName || deleteTarget.email}</span> 的账号吗？此操作不可撤销。
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 backdrop-blur-sm" onClick={() => setDeleteTarget(null)}>
+          <div className="bg-card rounded-2xl shadow-elevated w-full max-w-sm p-6 mx-4 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-card-foreground mb-3">确认删除</h3>
+            <p className="text-sm text-card-foreground/50 mb-5">
+              确定要删除 <span className="font-medium text-card-foreground">{deleteTarget.displayName || deleteTarget.email}</span> 的账号吗？此操作不可撤销。
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 py-2.5 rounded-lg border text-sm font-medium hover:bg-secondary transition-colors"
-              >
+              <button onClick={() => setDeleteTarget(null)}
+                className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-card-foreground hover:bg-card-foreground/5 transition-all">
                 取消
               </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
-              >
+              <button onClick={handleDelete} disabled={deleting}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-destructive text-destructive-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all disabled:opacity-40">
                 {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
                 确认删除
               </button>

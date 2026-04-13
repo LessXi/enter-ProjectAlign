@@ -7,6 +7,8 @@ import { useProducts, usePurchaseOrders, useCreatePO, useUpdatePOStatus } from '
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'react-router-dom';
 
+const inputCls = "w-full bg-input border border-border rounded-xl px-4 py-2.5 text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40";
+
 export default function PurchaseOrders() {
   const { role: currentRole } = useAuth();
   const { data: items = [], isLoading: loadingItems } = useProducts();
@@ -24,7 +26,6 @@ export default function PurchaseOrders() {
   const [poSupplier, setPOSupplier] = useState('');
   const [poNote, setPONote] = useState('');
 
-  // Auto-open form and pre-fill when navigating with ?prefill=<productId>
   useEffect(() => {
     const prefillId = searchParams.get('prefill');
     if (!prefillId || loadingItems || items.length === 0) return;
@@ -32,12 +33,10 @@ export default function PurchaseOrders() {
     if (!item) return;
     setPOItemId(item.id);
     setPOPrice(String(item.unitPrice));
-    // Suggest quantity: threshold - stock (at least 1)
     const suggestedQty = Math.max(item.threshold - item.stock, 1);
     setPOQty(String(suggestedQty));
     setPONote(`库存预警补货 - ${item.name} ${item.spec}`);
     setShowForm(true);
-    // Clear the search param so refreshing doesn't re-trigger
     setSearchParams({}, { replace: true });
   }, [searchParams, items, loadingItems, setSearchParams]);
 
@@ -86,12 +85,10 @@ export default function PurchaseOrders() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">采购单</h2>
+        <h2 className="text-2xl font-bold text-foreground">采购单</h2>
         {isPurchasing && !showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-          >
+          <button onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all shadow-card">
             <Plus className="w-4 h-4" />
             新建采购单
           </button>
@@ -99,49 +96,42 @@ export default function PurchaseOrders() {
       </div>
 
       {showForm && (
-        <div className="bg-card rounded-lg shadow-card p-6">
-          <h3 className="text-base font-semibold mb-4">新建采购单</h3>
+        <div className="bg-card rounded-2xl shadow-card p-6 animate-scale-in">
+          <h3 className="text-base font-semibold text-card-foreground mb-4">新建采购单</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">商品 *</label>
-              <select value={poItemId} onChange={(e) => { setPOItemId(e.target.value); const item = items.find((i) => i.id === e.target.value); if (item) setPOPrice(String(item.unitPrice)); }}
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">商品 *</label>
+              <select value={poItemId} onChange={(e) => { setPOItemId(e.target.value); const item = items.find((i) => i.id === e.target.value); if (item) setPOPrice(String(item.unitPrice)); }} className={inputCls}>
                 <option value="">选择商品</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>{item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]</option>
-                ))}
+                {items.map((item) => (<option key={item.id} value={item.id}>{item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]</option>))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">数量 *</label>
-              <input type="number" value={poQty} onChange={(e) => setPOQty(e.target.value)} placeholder="采购数量"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">数量 *</label>
+              <input type="number" value={poQty} onChange={(e) => setPOQty(e.target.value)} placeholder="采购数量" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">预估单价 *</label>
-              <input type="number" value={poPrice} onChange={(e) => setPOPrice(e.target.value)} placeholder="单价"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">预估单价 *</label>
+              <input type="number" value={poPrice} onChange={(e) => setPOPrice(e.target.value)} placeholder="单价" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">供应商 *</label>
-              <input type="text" value={poSupplier} onChange={(e) => setPOSupplier(e.target.value)} placeholder="供应商名称"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">供应商 *</label>
+              <input type="text" value={poSupplier} onChange={(e) => setPOSupplier(e.target.value)} placeholder="供应商名称" className={inputCls} />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">备注</label>
-              <input type="text" value={poNote} onChange={(e) => setPONote(e.target.value)} placeholder="备注"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">备注</label>
+              <input type="text" value={poNote} onChange={(e) => setPONote(e.target.value)} placeholder="备注" className={inputCls} />
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <button onClick={() => setShowForm(false)} className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-secondary transition-colors">取消</button>
+            <button onClick={() => setShowForm(false)} className="px-5 py-2.5 border border-border rounded-xl text-sm font-medium text-card-foreground hover:bg-card-foreground/5 transition-all">取消</button>
             <button onClick={() => handleCreate('draft')} disabled={!poItemId || !poQty || !poPrice || !poSupplier || createPO.isPending}
-              className="flex items-center gap-2 px-4 py-2 border rounded-md text-sm font-medium hover:bg-secondary transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 px-5 py-2.5 border border-border rounded-xl text-sm font-medium text-card-foreground hover:bg-card-foreground/5 transition-all disabled:opacity-40">
               {createPO.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
               保存草稿
             </button>
             <button onClick={() => handleCreate('pending')} disabled={!poItemId || !poQty || !poPrice || !poSupplier || createPO.isPending}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all disabled:opacity-40 shadow-card">
               {createPO.isPending && <Loader2 className="w-3 h-3 animate-spin" />}
               提交审批
             </button>
@@ -150,22 +140,22 @@ export default function PurchaseOrders() {
       )}
 
       {selectedPO && (
-        <div className="bg-card rounded-lg shadow-card p-6">
+        <div className="bg-card rounded-2xl shadow-card p-6 animate-scale-in">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-semibold">采购单详情 - {selectedPO.poNumber}</h3>
-            <button onClick={() => setDetailPO(null)} className="text-sm text-muted-foreground hover:text-foreground">关闭</button>
+            <h3 className="text-base font-semibold text-card-foreground">采购单详情 - {selectedPO.poNumber}</h3>
+            <button onClick={() => setDetailPO(null)} className="text-sm text-card-foreground/40 hover:text-card-foreground transition-colors">关闭</button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div><span className="text-muted-foreground">供应商：</span>{selectedPO.supplier}</div>
-            <div className="flex gap-1 items-center"><span className="text-muted-foreground">状态：</span><POBadge status={selectedPO.status} /></div>
-            <div><span className="text-muted-foreground">创建日期：</span>{selectedPO.createdDate}</div>
-            <div><span className="text-muted-foreground">备注：</span>{selectedPO.note || '-'}</div>
+            <div><span className="text-card-foreground/40">供应商：</span><span className="text-card-foreground">{selectedPO.supplier}</span></div>
+            <div className="flex gap-1 items-center"><span className="text-card-foreground/40">状态：</span><POBadge status={selectedPO.status} /></div>
+            <div><span className="text-card-foreground/40">创建日期：</span><span className="text-card-foreground">{selectedPO.createdDate}</span></div>
+            <div><span className="text-card-foreground/40">备注：</span><span className="text-card-foreground">{selectedPO.note || '-'}</span></div>
           </div>
           <table className="w-full text-sm mt-4">
-            <thead><tr className="border-b"><th className="text-left py-2">商品</th><th className="text-right py-2">数量</th><th className="text-right py-2">单价</th><th className="text-right py-2">小计</th></tr></thead>
+            <thead><tr className="border-b border-card-foreground/10"><th className="text-left py-2.5 text-card-foreground/50">商品</th><th className="text-right py-2.5 text-card-foreground/50">数量</th><th className="text-right py-2.5 text-card-foreground/50">单价</th><th className="text-right py-2.5 text-card-foreground/50">小计</th></tr></thead>
             <tbody>
               {selectedPO.items.map((pi, idx) => (
-                <tr key={idx} className="border-b"><td className="py-2">{getItemName(pi.itemId)}</td><td className="py-2 text-right">{pi.quantity}</td><td className="py-2 text-right">¥{pi.unitPrice}</td><td className="py-2 text-right font-semibold">¥{(pi.quantity * pi.unitPrice).toLocaleString()}</td></tr>
+                <tr key={idx} className="border-b border-card-foreground/5"><td className="py-2.5 text-card-foreground">{getItemName(pi.itemId)}</td><td className="py-2.5 text-right text-card-foreground">{pi.quantity}</td><td className="py-2.5 text-right text-card-foreground">¥{pi.unitPrice}</td><td className="py-2.5 text-right font-semibold text-card-foreground">¥{(pi.quantity * pi.unitPrice).toLocaleString()}</td></tr>
               ))}
             </tbody>
           </table>
@@ -175,18 +165,18 @@ export default function PurchaseOrders() {
       {isLoading ? (
         <div className="flex items-center justify-center h-48"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
       ) : (
-        <div className="bg-card rounded-lg shadow-card overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-secondary/50 border-b-2">
-                  <th className="text-left py-3 px-4 font-semibold">采购单号</th>
-                  <th className="text-left py-3 px-4 font-semibold">商品明细</th>
-                  <th className="text-right py-3 px-4 font-semibold">总金额</th>
-                  <th className="text-left py-3 px-4 font-semibold">供应商</th>
-                  <th className="text-center py-3 px-4 font-semibold">状态</th>
-                  <th className="text-left py-3 px-4 font-semibold">日期</th>
-                  <th className="text-center py-3 px-4 font-semibold">操作</th>
+                <tr className="border-b border-card-foreground/10">
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">采购单号</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">商品明细</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">总金额</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">供应商</th>
+                  <th className="text-center py-3.5 px-5 font-semibold text-card-foreground/50">状态</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">日期</th>
+                  <th className="text-center py-3.5 px-5 font-semibold text-card-foreground/50">操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -194,40 +184,40 @@ export default function PurchaseOrders() {
                   const total = po.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
                   const summary = po.items.map((i) => `${getItemName(i.itemId)}x${i.quantity}`).join(', ');
                   return (
-                    <tr key={po.id} className={`border-b last:border-0 hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
-                      <td className="py-3 px-4 font-mono text-xs">{po.poNumber}</td>
-                      <td className="py-3 px-4 truncate max-w-[200px]">{summary}</td>
-                      <td className="py-3 px-4 text-right font-semibold">¥{total.toLocaleString()}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{po.supplier}</td>
-                      <td className="py-3 px-4 text-center"><POBadge status={po.status} /></td>
-                      <td className="py-3 px-4 text-muted-foreground">{po.createdDate}</td>
-                      <td className="py-3 px-4 text-center">
+                    <tr key={po.id} className={`border-b border-card-foreground/5 last:border-0 hover:bg-card-foreground/5 transition-colors ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                      <td className="py-3.5 px-5 font-mono text-xs text-card-foreground/60">{po.poNumber}</td>
+                      <td className="py-3.5 px-5 truncate max-w-[200px] text-card-foreground">{summary}</td>
+                      <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">¥{total.toLocaleString()}</td>
+                      <td className="py-3.5 px-5 text-card-foreground/50">{po.supplier}</td>
+                      <td className="py-3.5 px-5 text-center"><POBadge status={po.status} /></td>
+                      <td className="py-3.5 px-5 text-card-foreground/40">{po.createdDate}</td>
+                      <td className="py-3.5 px-5 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => setDetailPO(po.poNumber)} className="p-1.5 hover:bg-secondary rounded" title="查看">
-                            <Eye className="w-4 h-4 text-muted-foreground" />
+                          <button onClick={() => setDetailPO(po.poNumber)} className="p-1.5 hover:bg-card-foreground/10 rounded-lg transition-colors" title="查看">
+                            <Eye className="w-4 h-4 text-card-foreground/40" />
                           </button>
                           {isBoss && po.status === 'pending' && (
                             <>
-                              <button onClick={() => handleStatusUpdate(po.poNumber, 'approved')} className="p-1.5 hover:bg-success-bg rounded" title="批准">
-                                <Check className="w-4 h-4 text-success" />
+                              <button onClick={() => handleStatusUpdate(po.poNumber, 'approved')} className="p-1.5 hover:bg-primary/20 rounded-lg transition-colors" title="批准">
+                                <Check className="w-4 h-4 text-primary" />
                               </button>
-                              <button onClick={() => handleStatusUpdate(po.poNumber, 'rejected')} className="p-1.5 hover:bg-destructive-bg rounded" title="驳回">
+                              <button onClick={() => handleStatusUpdate(po.poNumber, 'rejected')} className="p-1.5 hover:bg-destructive/20 rounded-lg transition-colors" title="驳回">
                                 <X className="w-4 h-4 text-destructive" />
                               </button>
                             </>
                           )}
                           {isPurchasing && po.status === 'draft' && (
-                            <button onClick={() => handleStatusUpdate(po.poNumber, 'pending')} className="px-2 py-1 text-xs bg-primary text-primary-foreground rounded hover:bg-primary/90">
+                            <button onClick={() => handleStatusUpdate(po.poNumber, 'pending')} className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-full font-medium hover:brightness-95 transition-all">
                               提交
                             </button>
                           )}
                           {isPurchasing && po.status === 'approved' && (
-                            <button onClick={() => handleStatusUpdate(po.poNumber, 'received')} className="px-2 py-1 text-xs bg-success text-success-foreground rounded hover:bg-success/90">
+                            <button onClick={() => handleStatusUpdate(po.poNumber, 'received')} className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-full font-medium hover:brightness-95 transition-all">
                               收货
                             </button>
                           )}
                           {isPurchasing && po.status === 'rejected' && (
-                            <button onClick={() => handleStatusUpdate(po.poNumber, 'draft')} className="px-2 py-1 text-xs border rounded hover:bg-secondary">
+                            <button onClick={() => handleStatusUpdate(po.poNumber, 'draft')} className="px-3 py-1 text-xs border border-border text-card-foreground rounded-full font-medium hover:bg-card-foreground/5 transition-all">
                               重新编辑
                             </button>
                           )}

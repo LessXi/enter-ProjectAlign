@@ -9,10 +9,10 @@ const roleLabel: Record<string, string> = {
   boss: '老板',
 };
 
-const roleBg: Record<string, string> = {
-  warehouse: 'bg-info-bg text-info',
-  purchasing: 'bg-warning-bg text-warning',
-  boss: 'bg-success-bg text-success',
+const roleBadge: Record<string, string> = {
+  warehouse: 'bg-accent/20 text-accent',
+  purchasing: 'bg-warning/20 text-warning',
+  boss: 'bg-primary/20 text-primary',
 };
 
 export function Layout() {
@@ -31,21 +31,21 @@ export function Layout() {
   }
 
   return (
-    <div className="h-full flex overflow-hidden">
+    <div className="h-full flex overflow-hidden bg-background">
       <AppSidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-14 bg-card border-b flex items-center justify-between px-6 flex-shrink-0">
+        <header className="h-16 bg-card border-b border-border/30 flex items-center justify-between px-6 flex-shrink-0">
           <div />
           <div className="flex items-center gap-3">
-            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${roleBg[role] ?? 'bg-secondary text-foreground'}`}>
+            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${roleBadge[role] ?? 'bg-secondary text-secondary-foreground'}`}>
               {roleLabel[role] ?? role}
             </span>
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-card-foreground">
               {displayName || user.email}
             </span>
             <button
               onClick={signOut}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-card-foreground/50 hover:text-card-foreground hover:bg-card-foreground/10 transition-all duration-200"
             >
               <LogOut className="w-3.5 h-3.5" />
               退出

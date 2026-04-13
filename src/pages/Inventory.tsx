@@ -19,23 +19,23 @@ export default function Inventory() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">库存管理</h2>
+      <h2 className="text-2xl font-bold text-foreground">库存管理</h2>
 
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-card-foreground/30" />
           <input
             type="text"
             placeholder="搜索品名、SKU、规格..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-card border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-xl text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
         </div>
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as 'all' | StockStatus)}
-          className="bg-card border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-card-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
         >
           <option value="all">全部状态</option>
           <option value="normal">正常</option>
@@ -49,34 +49,34 @@ export default function Inventory() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : (
-        <div className="bg-card rounded-lg shadow-card overflow-hidden">
+        <div className="bg-card rounded-2xl shadow-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-secondary/50 border-b-2">
-                  <th className="text-left py-3 px-4 font-semibold">SKU编号</th>
-                  <th className="text-left py-3 px-4 font-semibold">品名</th>
-                  <th className="text-left py-3 px-4 font-semibold">品类</th>
-                  <th className="text-left py-3 px-4 font-semibold">规格</th>
-                  <th className="text-right py-3 px-4 font-semibold">库存</th>
-                  <th className="text-right py-3 px-4 font-semibold">预警阈值</th>
-                  <th className="text-right py-3 px-4 font-semibold">单价</th>
-                  <th className="text-center py-3 px-4 font-semibold">状态</th>
+                <tr className="border-b border-card-foreground/10">
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">SKU编号</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">品名</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">品类</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">规格</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">库存</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">预警阈值</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">单价</th>
+                  <th className="text-center py-3.5 px-5 font-semibold text-card-foreground/50">状态</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((item, idx) => {
                   const status = getStockStatus(item.stock, item.threshold);
                   return (
-                    <tr key={item.id} className={`border-b last:border-0 hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
-                      <td className="py-3 px-4 font-mono text-xs">{item.sku}</td>
-                      <td className="py-3 px-4 font-medium">{item.name}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{item.category}</td>
-                      <td className="py-3 px-4 text-muted-foreground">{item.spec}</td>
-                      <td className="py-3 px-4 text-right font-semibold">{item.stock}</td>
-                      <td className="py-3 px-4 text-right text-muted-foreground">{item.threshold}</td>
-                      <td className="py-3 px-4 text-right">¥{item.unitPrice}</td>
-                      <td className="py-3 px-4 text-center"><StockBadge status={status} /></td>
+                    <tr key={item.id} className={`border-b border-card-foreground/5 last:border-0 hover:bg-card-foreground/5 transition-colors ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                      <td className="py-3.5 px-5 font-mono text-xs text-card-foreground/60">{item.sku}</td>
+                      <td className="py-3.5 px-5 font-medium text-card-foreground">{item.name}</td>
+                      <td className="py-3.5 px-5 text-card-foreground/50">{item.category}</td>
+                      <td className="py-3.5 px-5 text-card-foreground/50">{item.spec}</td>
+                      <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">{item.stock}</td>
+                      <td className="py-3.5 px-5 text-right text-card-foreground/40">{item.threshold}</td>
+                      <td className="py-3.5 px-5 text-right text-card-foreground">¥{item.unitPrice}</td>
+                      <td className="py-3.5 px-5 text-center"><StockBadge status={status} /></td>
                     </tr>
                   );
                 })}
@@ -84,7 +84,7 @@ export default function Inventory() {
             </table>
           </div>
           {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground py-12 text-center">没有找到匹配的商品</p>
+            <p className="text-sm text-card-foreground/40 py-12 text-center">没有找到匹配的商品</p>
           )}
         </div>
       )}

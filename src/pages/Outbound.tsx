@@ -3,6 +3,8 @@ import { ArrowUpFromLine, Loader2 } from 'lucide-react';
 import { useProducts, useTransactions, useAddTransaction } from '@/hooks/useInventoryData';
 import { useToast } from '@/hooks/use-toast';
 
+const inputCls = "w-full bg-input border border-border rounded-xl px-4 py-2.5 text-sm text-card-foreground placeholder:text-card-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/40";
+
 export default function Outbound() {
   const { data: items = [] } = useProducts();
   const { data: transactions = [], isLoading } = useTransactions();
@@ -47,11 +49,11 @@ export default function Outbound() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">出库管理</h2>
+        <h2 className="text-2xl font-bold text-foreground">出库管理</h2>
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all shadow-card"
           >
             <ArrowUpFromLine className="w-4 h-4" />
             新增出库单
@@ -60,61 +62,41 @@ export default function Outbound() {
       </div>
 
       {showForm && (
-        <div className="bg-card rounded-lg shadow-card p-6">
-          <h3 className="text-base font-semibold mb-4">新增出库单</h3>
+        <div className="bg-card rounded-2xl shadow-card p-6 animate-scale-in">
+          <h3 className="text-base font-semibold text-card-foreground mb-4">新增出库单</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">商品 *</label>
-              <select
-                value={itemId}
-                onChange={(e) => {
-                  setItemId(e.target.value);
-                  const item = items.find((i) => i.id === e.target.value);
-                  if (item) setUnitPrice(String(item.unitPrice));
-                }}
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-              >
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">商品 *</label>
+              <select value={itemId} onChange={(e) => { setItemId(e.target.value); const item = items.find((i) => i.id === e.target.value); if (item) setUnitPrice(String(item.unitPrice)); }} className={inputCls}>
                 <option value="">选择商品</option>
-                {items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]
-                  </option>
-                ))}
+                {items.map((item) => (<option key={item.id} value={item.id}>{item.sku} - {item.name} ({item.spec}) [库存: {item.stock}]</option>))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">数量 *</label>
-              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="输入数量"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">数量 *</label>
+              <input type="number" value={quantity} onChange={(e) => setQuantity(e.target.value)} placeholder="输入数量" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">单价 *</label>
-              <input type="number" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} placeholder="输入单价"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">单价 *</label>
+              <input type="number" value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} placeholder="输入单价" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">客户 *</label>
-              <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="输入客户名称"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">客户 *</label>
+              <input type="text" value={customer} onChange={(e) => setCustomer(e.target.value)} placeholder="输入客户名称" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">日期</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">日期</label>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">备注</label>
-              <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="备注信息"
-                className="w-full bg-background border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              <label className="block text-sm font-medium text-card-foreground/60 mb-1.5">备注</label>
+              <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="备注信息" className={inputCls} />
             </div>
           </div>
           <div className="flex justify-end gap-3 mt-6">
-            <button onClick={() => setShowForm(false)}
-              className="px-4 py-2 border rounded-md text-sm font-medium hover:bg-secondary transition-colors">
-              取消
-            </button>
+            <button onClick={() => setShowForm(false)} className="px-5 py-2.5 border border-border rounded-xl text-sm font-medium text-card-foreground hover:bg-card-foreground/5 transition-all">取消</button>
             <button onClick={handleSubmit} disabled={!itemId || !quantity || !unitPrice || !customer || addTransaction.isPending}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50">
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:brightness-95 transition-all disabled:opacity-40 shadow-card">
               {addTransaction.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               确认出库
             </button>
@@ -122,9 +104,9 @@ export default function Outbound() {
         </div>
       )}
 
-      <div className="bg-card rounded-lg shadow-card overflow-hidden">
-        <div className="px-5 py-4 border-b">
-          <h3 className="text-base font-semibold">出库历史</h3>
+      <div className="bg-card rounded-2xl shadow-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-card-foreground/10">
+          <h3 className="text-base font-semibold text-card-foreground">出库历史</h3>
         </div>
         {isLoading ? (
           <div className="flex items-center justify-center h-32"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
@@ -132,30 +114,30 @@ export default function Outbound() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-secondary/50 border-b-2">
-                  <th className="text-left py-3 px-4 font-semibold">商品</th>
-                  <th className="text-right py-3 px-4 font-semibold">数量</th>
-                  <th className="text-right py-3 px-4 font-semibold">单价</th>
-                  <th className="text-right py-3 px-4 font-semibold">金额</th>
-                  <th className="text-left py-3 px-4 font-semibold">客户</th>
-                  <th className="text-left py-3 px-4 font-semibold">日期</th>
+                <tr className="border-b border-card-foreground/10">
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">商品</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">数量</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">单价</th>
+                  <th className="text-right py-3.5 px-5 font-semibold text-card-foreground/50">金额</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">客户</th>
+                  <th className="text-left py-3.5 px-5 font-semibold text-card-foreground/50">日期</th>
                 </tr>
               </thead>
               <tbody>
                 {outboundTxs.map((tx, idx) => (
-                  <tr key={tx.id} className={`border-b last:border-0 hover:bg-primary/5 transition-colors ${idx % 2 === 1 ? 'bg-secondary/20' : ''}`}>
-                    <td className="py-3 px-4">{getItemName(tx.itemId)}</td>
-                    <td className="py-3 px-4 text-right text-destructive font-medium">-{tx.quantity}</td>
-                    <td className="py-3 px-4 text-right">¥{tx.unitPrice}</td>
-                    <td className="py-3 px-4 text-right font-semibold">¥{(tx.quantity * tx.unitPrice).toLocaleString()}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{tx.counterparty}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{tx.date}</td>
+                  <tr key={tx.id} className={`border-b border-card-foreground/5 last:border-0 hover:bg-card-foreground/5 transition-colors ${idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
+                    <td className="py-3.5 px-5 text-card-foreground">{getItemName(tx.itemId)}</td>
+                    <td className="py-3.5 px-5 text-right text-destructive font-medium">-{tx.quantity}</td>
+                    <td className="py-3.5 px-5 text-right text-card-foreground">¥{tx.unitPrice}</td>
+                    <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">¥{(tx.quantity * tx.unitPrice).toLocaleString()}</td>
+                    <td className="py-3.5 px-5 text-card-foreground/50">{tx.counterparty}</td>
+                    <td className="py-3.5 px-5 text-card-foreground/40">{tx.date}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {outboundTxs.length === 0 && (
-              <p className="text-sm text-muted-foreground py-12 text-center">暂无出库记录</p>
+              <p className="text-sm text-card-foreground/40 py-12 text-center">暂无出库记录</p>
             )}
           </div>
         )}

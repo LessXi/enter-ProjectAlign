@@ -30,14 +30,14 @@ export function AppSidebar() {
   const visibleItems = allMenuItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside className="w-60 h-full bg-sidebar flex flex-col flex-shrink-0">
-      <div className="px-5 py-6 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-sidebar-primary flex items-center justify-center">
-          <Warehouse className="w-5 h-5 text-sidebar-primary-foreground" />
+    <aside className="w-60 h-full bg-sidebar flex flex-col flex-shrink-0 rounded-r-2xl">
+      <div className="px-5 py-7 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <Warehouse className="w-5 h-5 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-base font-semibold text-sidebar-foreground">进销存系统</h1>
-          <p className="text-xs text-sidebar-foreground/60">服装批发管理</p>
+          <h1 className="text-base font-bold text-sidebar-accent-foreground">进销存系统</h1>
+          <p className="text-[11px] text-sidebar-foreground/50">服装批发管理</p>
         </div>
       </div>
 
@@ -49,10 +49,10 @@ export function AppSidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-sidebar-accent text-sidebar-primary-foreground'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-card'
+                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               )}
             >
               <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -62,8 +62,8 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-4 border-t border-sidebar-border">
-        <p className="text-xs text-sidebar-foreground/50 px-3">v1.0 · 服装批发ERP</p>
+      <div className="px-4 py-5 border-t border-sidebar-border">
+        <p className="text-[11px] text-sidebar-foreground/30 px-2">v1.0 · 服装批发ERP</p>
       </div>
     </aside>
   );
