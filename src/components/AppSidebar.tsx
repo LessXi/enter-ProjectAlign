@@ -7,6 +7,7 @@ import {
   ShoppingCart,
   BarChart3,
   Users,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import type { Role } from '@/types/inventory';
@@ -28,20 +29,32 @@ const navItems: NavItem[] = [
   { title: '员工管理', icon: Users, path: '/staff', roles: ['boss'] },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export function AppSidebar({ open, onClose }: AppSidebarProps) {
   const location = useLocation();
   const { role } = useAuth();
   const filtered = navItems.filter((item) => item.roles.includes(role));
 
-  return (
-    <aside className="w-56 shrink-0 bg-white/70 backdrop-blur-sm border-r border-[#1A1A2E]/5 flex flex-col py-6 px-3 gap-1">
+  const sidebarContent = (
+    <>
       {/* Brand */}
-      <div className="px-3 mb-6">
-        <h1 className="text-lg font-bold text-[#1A1A2E] tracking-tight">
-          <span className="inline-block w-2 h-2 rounded-full bg-mint mr-2 translate-y-[-1px]" />
-          衣仓管家
-        </h1>
-        <p className="text-[11px] text-[#1A1A2E]/40 mt-0.5 pl-4">服装批发进销存</p>
+      <div className="px-3 mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-[#1A1A2E] tracking-tight">
+            <span className="inline-block w-2 h-2 rounded-full bg-mint mr-2 translate-y-[-1px]" />
+            衣仓管家
+          </h1>
+          <p className="text-[11px] text-[#1A1A2E]/40 mt-0.5 pl-4">服装批发进销存</p>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg hover:bg-muted/50 transition-colors">
+            <X className="w-5 h-5 text-[#1A1A2E]/60" />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -53,6 +66,7 @@ export function AppSidebar() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={onClose}
               className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? 'bg-[#1A1A2E] text-white shadow-md shadow-[#1A1A2E]/20'
@@ -68,6 +82,25 @@ export function AppSidebar() {
           );
         })}
       </nav>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden lg:flex w-56 shrink-0 bg-white/70 backdrop-blur-sm border-r border-[#1A1A2E]/5 flex-col py-6 px-3 gap-1">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile overlay + drawer */}
+      {open && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+          <aside className="absolute left-0 top-0 h-full w-64 bg-white/95 backdrop-blur-md shadow-elevated flex flex-col py-6 px-3 gap-1 animate-slide-in-left">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

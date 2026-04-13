@@ -10,6 +10,7 @@ export default {
 		"./src/**/*.{ts,tsx}",
 	],
 	prefix: "",
+	safelist: ['lg:row-span-2', 'lg:row-span-3'],
 	theme: {
 		container: {
 			center: true,

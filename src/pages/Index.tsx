@@ -65,13 +65,13 @@ export default function Dashboard() {
       <h2 className="text-xl font-bold text-foreground">工作台</h2>
 
       {/* === BENTO GRID === */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-auto">
         {/* Row 1: Stats cards (small) + chart (tall) */}
         <StatsCard title="总 SKU 数" value={items.length} icon={Package} />
         <StatsCard title="预警商品" value={warningItems.length} icon={AlertTriangle} variant="warning" subtitle={warningItems.length > 0 ? '需要关注' : '状态良好'} />
 
-        {/* Chart card - spans 2 cols on lg, row-span dynamically based on role */}
-        <div className={`col-span-2 ${isBoss ? 'row-span-3' : 'row-span-2'} bg-[#1A1A2E] rounded-3xl p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col`}>
+        {/* Chart card - spans 2 cols on sm+, row-span dynamically based on role on lg */}
+        <div className={`sm:col-span-2 ${isBoss ? 'lg:row-span-3' : 'lg:row-span-2'} bg-[#1A1A2E] rounded-3xl p-5 sm:p-6 shadow-card transition-all duration-300 hover:shadow-elevated flex flex-col min-h-[280px] sm:min-h-0`}>
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-white/60">月度进出趋势</h3>
             <span className="text-[10px] text-white/30 bg-white/10 px-2.5 py-1 rounded-full">近6月</span>
@@ -110,7 +110,7 @@ export default function Dashboard() {
       {/* === CONTENT CARDS ROW === */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Inventory warnings - wider */}
-        <div className="lg:col-span-3 bg-card rounded-3xl shadow-card p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
+        <div className="lg:col-span-3 bg-card rounded-3xl shadow-card p-5 sm:p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-foreground">库存预警</h3>
             <Link to="/inventory" className="text-xs text-muted-foreground hover:text-foreground font-medium transition-colors">查看全部</Link>
@@ -119,7 +119,7 @@ export default function Dashboard() {
             <p className="text-sm text-muted-foreground py-8 text-center">库存状态良好</p>
           ) : (
             <div className="overflow-x-auto -mx-2">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[400px]">
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2.5 px-2 font-medium text-muted-foreground text-xs">品名</th>
@@ -156,7 +156,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent transactions - narrower */}
-        <div className="lg:col-span-2 bg-card rounded-3xl shadow-card p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
+        <div className="lg:col-span-2 bg-card rounded-3xl shadow-card p-5 sm:p-6 border border-border/50 transition-all duration-300 hover:shadow-elevated">
           <h3 className="text-sm font-semibold text-foreground mb-4">最近流水</h3>
           <div className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1 custom-scrollbar">
             {recentTxs.map((tx) => (
