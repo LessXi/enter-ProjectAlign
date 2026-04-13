@@ -89,8 +89,8 @@ export default function Dashboard() {
                 formatter={(value: number) => `¥${value.toLocaleString()}`}
                 contentStyle={{ backgroundColor: '#fff', border: 'none', borderRadius: '12px', color: '#1A1A1A', fontSize: '12px' }}
               />
-              <Bar dataKey="inbound" name="入库" fill="#A4F5A6" radius={[6, 6, 2, 2]} />
-              <Bar dataKey="outbound" name="出库" fill="#B3A1FF" radius={[6, 6, 2, 2]} />
+              <Bar dataKey="inbound" name="入库" fill="#B3A1FF" radius={[6, 6, 2, 2]} />
+              <Bar dataKey="outbound" name="出库" fill="#A4F5A6" radius={[6, 6, 2, 2]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -162,7 +162,7 @@ export default function Dashboard() {
             {recentTxs.map((tx) => (
               <div key={tx.id} className="flex items-center justify-between py-2.5 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${tx.type === 'inbound' ? 'bg-mint/30' : 'bg-lavender/30'}`}>
+                  <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${tx.type === 'inbound' ? 'bg-lavender/30' : 'bg-mint/30'}`}>
                     {tx.type === 'inbound'
                       ? <ArrowDownToLine className="w-3.5 h-3.5 text-foreground/70" />
                       : <ArrowUpFromLine className="w-3.5 h-3.5 text-foreground/70" />
@@ -182,7 +182,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end flex-shrink-0 ml-3">
-                  <span className={`text-xs font-semibold ${tx.type === 'inbound' ? 'text-success' : 'text-destructive'}`}>
+                  <span className="text-xs font-semibold" style={{ color: tx.type === 'inbound' ? 'hsl(255,80%,65%)' : 'hsl(145,55%,45%)' }}>
                     {tx.type === 'inbound' ? '+' : '-'}{tx.quantity}
                   </span>
                   <span className="text-[10px] text-muted-foreground">¥{(tx.quantity * tx.unitPrice).toLocaleString()}</span>

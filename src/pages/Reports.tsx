@@ -372,7 +372,7 @@ export default function Reports() {
                 <YAxis axisLine={false} tickLine={false} tickFormatter={(v) => `¥${(v / 1000).toFixed(0)}k`} tick={{ fill: 'hsl(0,0%,50%)' }} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} formatter={(value: number) => `¥${value.toLocaleString()}`} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                 <Legend />
-                <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(38,92%,55%)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="inbound" name="入库金额（支出）" fill="hsl(255,80%,82%)" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="outbound" name="出库金额（收入）" fill="hsl(125,85%,81%)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -387,7 +387,7 @@ export default function Reports() {
                 <YAxis axisLine={false} tickLine={false} tick={{ fill: 'hsl(0,0%,50%)' }} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.04)' }} contentStyle={{ backgroundColor: '#1A1A1A', border: 'none', borderRadius: '12px', color: '#fff' }} />
                 <Legend />
-                <Line type="monotone" dataKey="inbound" name="入库量" stroke="hsl(38,92%,55%)" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="inbound" name="入库量" stroke="hsl(255,80%,82%)" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="outbound" name="出库量" stroke="hsl(125,85%,81%)" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
@@ -560,8 +560,8 @@ export default function Reports() {
                     <tr key={row.id} className={`border-b border-border/50 last:border-0 ${row.discrepancy !== 0 ? 'bg-destructive/5' : idx % 2 === 1 ? 'bg-card-foreground/[0.02]' : ''}`}>
                       <td className="py-3.5 px-5 font-medium text-card-foreground">{row.name} <span className="text-card-foreground">{row.spec}</span></td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{row.opening}</td>
-                      <td className="py-3.5 px-5 text-right text-warning">+{row.inbound}</td>
-                      <td className="py-3.5 px-5 text-right text-primary">-{row.outbound}</td>
+                      <td className="py-3.5 px-5 text-right" style={{ color: 'hsl(255,80%,65%)' }}>+{row.inbound}</td>
+                      <td className="py-3.5 px-5 text-right" style={{ color: 'hsl(145,55%,45%)' }}>-{row.outbound}</td>
                       <td className="py-3.5 px-5 text-right text-card-foreground">{row.theoreticalClose}</td>
                       <td className="py-3.5 px-5 text-right font-semibold text-card-foreground">{row.actualClose}</td>
                       <td className={`py-3.5 px-5 text-right font-bold ${row.discrepancy !== 0 ? 'text-destructive' : 'text-card-foreground'}`}>
@@ -572,8 +572,8 @@ export default function Reports() {
                   <tr className="border-t border-border font-semibold">
                     <td className="py-3.5 px-5 text-card-foreground">合计</td>
                     <td className="py-3.5 px-5 text-right text-card-foreground">{reconData.reduce((s, r) => s + r.opening, 0)}</td>
-                    <td className="py-3.5 px-5 text-right text-warning">+{reconData.reduce((s, r) => s + r.inbound, 0)}</td>
-                    <td className="py-3.5 px-5 text-right text-primary">-{reconData.reduce((s, r) => s + r.outbound, 0)}</td>
+                    <td className="py-3.5 px-5 text-right" style={{ color: 'hsl(255,80%,65%)' }}>+{reconData.reduce((s, r) => s + r.inbound, 0)}</td>
+                    <td className="py-3.5 px-5 text-right" style={{ color: 'hsl(145,55%,45%)' }}>-{reconData.reduce((s, r) => s + r.outbound, 0)}</td>
                     <td className="py-3.5 px-5 text-right text-card-foreground">{reconData.reduce((s, r) => s + r.theoreticalClose, 0)}</td>
                     <td className="py-3.5 px-5 text-right text-card-foreground">{reconData.reduce((s, r) => s + r.actualClose, 0)}</td>
                     <td className={`py-3.5 px-5 text-right font-bold ${reconData.reduce((s, r) => s + r.discrepancy, 0) !== 0 ? 'text-destructive' : ''}`}>
